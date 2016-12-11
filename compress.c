@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-/* These functions convert triangular matrices to and from compressed format. */
+/* These functions convert triangular matrices to and from compressed format. Lower triangular matrices are stored row-wise,
+while upper triangular matrices are stored column-wise.*/
 
 void compress_L(float* L, float* packed, int M, int N) {
 	// L is M x N
@@ -18,8 +19,8 @@ void compress_L(float* L, float* packed, int M, int N) {
 void compress_U(float* U, float* packed, int M, int N) {
 	// U is MxN
 	int i,j,k=0;
-	for (i=0; i<M; i++) {
-		for (j=fmin(i,N); j<N; j++) {
+	for (j=0; j<N; j++) {
+		for (i=0;i<fmin(j+1,M); i++) {
 			packed[k]=U[i*N+j];
 			k++;
 		}
@@ -40,8 +41,8 @@ void uncompress_L(float* packed, float* L, int M, int N) {
 void uncompress_U(float* packed, float* U, int M, int N) {
 	// U is MxN
 	int i,j,k=0;
-	for (i=0; i<M; i++) {
-		for (j=fmin(i,N); j<N; j++) {
+	for (j=0; j<N; j++) {
+		for (i=0; i=fmin(j+1,M); i++) {
 			U[i*N+j]=packed[k];
 			k++;
 		}
