@@ -16,12 +16,13 @@ void L_A(float* L, float* A, float* product, int M, int N) {
   int i, j ,k;
   #pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
-    for (j=0; j<N; j++) {
+    for (j=0; j<N; j++) {	
       product[i*N+j]=0;  // initialize
       // iterate along row of L/column of A
-      for (k=0; k<fmin(i+1,M); k++) {
+      for (k=0; k<i; k++) {
        product[i*N+j] += L[i*M+k]*A[k*N+j];   // add L[i,k]*A[k,j]
       }
+      product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
     }
   }
 }
@@ -33,16 +34,17 @@ void compressedL_A(float* L, float* A, float* product, int M, int N) {
   
   // iterate over entries of product
   int i, j, k, l;
-  #pragma omp parallel for schedule(guided)
+	#pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
       product[i*N+j]=0;	// initialize
-      l=i*(i+1)/2;			// start of row i
+      l=i*(i-1)/2;			// start of row i
       // iterate along row of L/column of A
-			for (k=0; k<fmin(i+1,M); k++) {
-				product[i*N+j] += L[l]*A[k*N+j];
+			for (k=0; k<i; k++) {
+				product[i*N+j] += L[l]*A[k*N+j]; // add L[i,k]*A[k,j]
 				l++;
 			}
+			product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
 		}
 	}
 }
