@@ -3,15 +3,16 @@
 #include <math.h>
 
 /* These functions convert triangular matrices to and from compressed format. Lower triangular matrices are stored row-wise,
-while upper triangular matrices are stored column-wise.*/
+while upper triangular matrices are stored column-wise. The diagonal entries of lower triangular matrices are not stored
+because they are always 1.*/
 
 void compress_L(float* L, float* compressed, int N) {
 	// L is NxN
 	int i,j,k;
 	#pragma omp parallel for schedule(guided)
-	for (i=0; i<N; i++) {
-		k=i*(i+1)/2;
-		for (j=0; j<i+1; j++) {
+	for (i=1; i<N; i++) {
+		k=i*(i-1)/2;    // starting index of row i
+		for (j=0; j<i; j++) {
 			compressed[k]=L[i*N+j];
 			k++;
 		}
@@ -36,8 +37,9 @@ void uncompress_L(float* compressed, float* L, int N) {
 	int i,j,k;
 	#pragma omp parallel for schedule(guided)
 	for (i=0; i<N; i++) {
-	  k=i*(i+1)/2;
-		for (j=0; j<i+1; j++) {
+	  k=i*(i-1)/2;
+	  L[i*N+i]=1;  // L[i,i]=1
+		for (j=0; j<i; j++) {
 			L[i*N+j]=compressed[k];
 			k++;
 		}
