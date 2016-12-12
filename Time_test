@@ -1,0 +1,215 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <omp.h>
+#include <time.h>
+
+
+void A_U(float* A, float* U, float* product, int M, int N);
+void A_compressedU(float* A, float* U, float* product, int M, int N);
+void L_A(float* L, float* A, float* product, int M, int N);
+void compressedL_A(float* L, float* A, float* product, int M, int N);
+void generate_matrix(float* matrix, int M, int N);
+void compress_L(float* L, float* compressed, int N);
+void compress_U(float* U, float* compressed, int N);
+void uncompress_L(float* compressed, float* L, int N);
+void uncompress_U(float* compressed, float* U, int N);
+
+int main (int argc, char** argv) {
+	float* matrix;
+	float* A;
+	float* U;
+	float* L;
+	float* compressed;
+	float* product;
+  struct timespec start_time, end_time;
+  struct timespec total_start, total_end;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  clock_gettime(CLOCK_REALTIME, &total_start);
+  clock_gettime(CLOCK_REALTIME, &start_time);
+
+generate_matrix(matrix, 100, 100);
+
+clock_gettime(CLOCK_REALTIME, &end_time);
+  double init_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+printf("generate matrix time: %f\n", init_time);
+
+generate_matrix(U, 100, 100);//generate upper matrix, not trangular
+generate_matrix(L, 100, 100);//generate lower matrix, not trangular
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  clock_gettime(CLOCK_REALTIME, &total_start);
+  clock_gettime(CLOCK_REALTIME, &start_time);
+
+//A_U(matrix, U, product, 100, 100);
+
+clock_gettime(CLOCK_REALTIME, &end_time);
+   init_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+printf("A*U time: %f\n", init_time);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  clock_gettime(CLOCK_REALTIME, &total_start);
+  clock_gettime(CLOCK_REALTIME, &start_time);
+
+ //compress_L(L, compressed, 100);
+
+clock_gettime(CLOCK_REALTIME, &end_time);
+   init_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+printf("compress L time: %f\n", init_time);
+
+
+return 0;
+
+}
+
+
+
+void A_U(float* A, float* U, float* product, int M, int N) {
+  // product is MxN
+  // A is MxN
+  // U is NxN
+
+  // iterate over entries of product
+  int i, j, k;
+  #pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      product[i*N+j]=0;  // initialize
+			// iterate along row of A/column of U
+      for (k=0; k<fmin(j+1,N); k++) {
+       product[i*N+j] += A[i*N+k]*U[k*N+j];   // add A[i,k]*U[k,j]
+      }
+    }
+  }
+}
+
+
+void A_compressedU(float* A, float* U, float* product, int M, int N) {
+	// product is MxN
+  // A is MxN
+  // U is NxN
+  
+  // iterate over entries of product
+  int i, j, k, u;
+  #pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      product[i*N+j]=0;	// initialize
+      u=j*(j+1)/2;			// start of col j 
+      // iterate along row of A/column of U
+			for (k=0; k<fmin(j+1,N); k++) {
+				product[i*N+j] += A[i*N+k]*U[u];
+				u++;
+			}
+		}
+	}
+}
+
+void L_A(float* L, float* A, float* product, int M, int N) {
+  // product is MxN
+  // L is MxM
+  // A is MxN
+
+  // iterate over entries of product
+  int i, j ,k;
+  #pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {	
+      product[i*N+j]=0;  // initialize
+      // iterate along row of L/column of A
+      for (k=0; k<i; k++) {
+       product[i*N+j] += L[i*M+k]*A[k*N+j];   // add L[i,k]*A[k,j]
+      }
+      product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
+    }
+  }
+}
+
+void compressedL_A(float* L, float* A, float* product, int M, int N) {
+	// product is MxN
+  // L is MxM
+  // A is MxN
+  
+  // iterate over entries of product
+  int i, j, k, l;
+	#pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      product[i*N+j]=0;	// initialize
+      l=i*(i-1)/2;			// start of row i
+      // iterate along row of L/column of A
+			for (k=0; k<i; k++) {
+				product[i*N+j] += L[l]*A[k*N+j]; // add L[i,k]*A[k,j]
+				l++;
+			}
+			product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
+		}
+	}
+}
+
+/* Generate a random MxN matrix */
+
+void generate_matrix(float* matrix, int M, int N) {
+	int i,j;
+	#pragma omp parallel for
+	for (i=0; i<M; i++) {
+		printf("i=%d\n",i);
+		for (j=0; j<N; j++) {
+			matrix[i*N+j]=(float)rand() / (float)RAND_MAX;
+		}
+	}
+}
+
+void compress_L(float* L, float* compressed, int N) {
+	// L is NxN
+	int i,j,k;
+	#pragma omp parallel for schedule(guided)
+	for (i=1; i<N; i++) {
+		k=i*(i-1)/2;    // starting index of row i
+		for (j=0; j<i; j++) {
+			compressed[k]=L[i*N+j];
+			k++;
+		}
+	}
+}
+
+void compress_U(float* U, float* compressed, int N) {
+	// U is NxN
+	int i,j,k;
+	#pragma omp parallel for schedule(guided)
+	for (j=0; j<N; j++) {
+	  k=j*(j+1)/2;
+		for (i=0; i<j+1; i++) {
+			compressed[k]=U[i*N+j];
+			k++;
+		}
+	}
+}
+
+void uncompress_L(float* compressed, float* L, int N) {
+	// L is NxN
+	int i,j,k;
+	#pragma omp parallel for schedule(guided)
+	for (i=0; i<N; i++) {
+	  k=i*(i-1)/2;
+	  L[i*N+i]=1;  // L[i,i]=1
+		for (j=0; j<i; j++) {
+			L[i*N+j]=compressed[k];
+			k++;
+		}
+	}
+}
+
+void uncompress_U(float* compressed, float* U, int N) {
+	// U is NxN
+	int i,j,k;
+	#pragma omp parallel for schedule(guided)
+	for (j=0; j<N; j++) {
+	  k=j*(j+1)/2;
+		for (i=0; i<j+1; i++) {
+			U[i*N+j]=compressed[k];
+			k++;
+		}
+	}
+}
