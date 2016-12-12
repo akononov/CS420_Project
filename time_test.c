@@ -62,7 +62,13 @@ clock_gettime(CLOCK_REALTIME, &end_time);
                      (double)(end_time.tv_sec - start_time.tv_sec);
 printf("compress L time: %f\n", init_time);
 
-
+	free(matrix);
+	free(A);
+	free(U);
+	free(L);
+	free(compressed);
+	free(product);
+	
 return 0;
 
 }
