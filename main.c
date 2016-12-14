@@ -63,18 +63,29 @@ int main(int argc, char** argv){
   
   // Allocate memory
   float* Inverses = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE);
+  int	estLUcount = n_blocks/(size-1)*1.1;
   if (myrank==0) {
-  	float* Ann = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE);
+		float* Ann = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE);
+		float* myLs, myUs;
+	}
+	else {
+		float* compressed_Linv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE-1)/2);
+		float* compressed_Uinv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE+1)/2);
+  	float* myLs = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE*estLUcount);
+  	float* myUs = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE*estLUcount);
   }
-  else {
-  	float* compressed_Linv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE-1)/2);
-  	float* compressed_Uinv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE+1)/2);
-  }
+	float* rowLs = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE*estLUcount*dims[1]);
+	float* colUs = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE*estLUcount*dims[0]);
+  
+  // Initialize variables/arrays used repeatedly
+  int myLcount, myUcount, rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
+  rowLdisps[0]=0;
+  colUdisps[0]=0;
   
   // Iterate over stages
-  int myLcount, myUcont, rowLcounts[dims[1]], colUcounts[dims[0]];
   for (n=0; n<n_blocks; n++){
-  	myTaskCount=0;
+  	myLcount=0;
+		myUcount=0;
   	
 	  // ========= MASTER =========
 		if (myrank==0) {
@@ -143,11 +154,20 @@ int main(int argc, char** argv){
 					// start new request for work
 					MPI_Isend(givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &req[0]);
 					MPI_Irecv(task, 2, MPI_UINT64_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE, &req[1]);
-				
-					// COMPUTE...
 					
-					if (task[]>task[]) myLcount+=1;
-					else	myUcount+=1;
+					// increment my count and check for sufficient memory
+					if (task[]>task[]){
+						myLcount+=1;
+						if (myLcount > avgLUcount)
+							//realloc
+					}
+					else {
+						myUcount+=1;
+						if (myUcount > avgLUcount)
+							//realloc
+					}
+					
+					// COMPUTE...
 				}
 			}
 		}
@@ -156,13 +176,19 @@ int main(int argc, char** argv){
 	  
 	  // Gather L counts from row and U counts from column
 	  MPI_Request gather[4];
-	  MPI_Iallgather(myLcounts, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
-	  MPI_Iallgather(myUcounts, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+	  MPI_Iallgather(myLcount*BLOCK_SIZE*BLOCK_SIZE, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
+	  MPI_Iallgather(myUcount*BLOCK_SIZE*BLOCK_SIZE, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+	  
+	  // Compute displacements of L and U blocks
+	  for (int i=1, i<dims[1], i++)
+	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1];
+	  for (int i=1, i<dims[0], i++)
+	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1];
 	  
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
-		MPI_Iallgatherv();
-		MPI_Iallgatherv();
+		MPI_Iallgatherv(myLs, myLcount*BLOCK_SIZE*BLOCK_SIZE, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gather[2]);
+		MPI_Iallgatherv(myUs, myIcount*BLOCK_SIZE*BLOCK_SIZE, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
 		
 		// update A[i][j] using all of my L[i][n], U[n][j]
 
@@ -172,8 +198,21 @@ int main(int argc, char** argv){
 		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
 	}
   
+  // finalize and free memory
 	MPI_Finalize();
-  // End timing
+	free(Inverses);
+  if (myrank==0)
+  	free(Ann);
+	else {
+		free(compressed_Linv);
+		free(compressed_Uinv);
+		free(myLs);
+		free(myUs);
+  }
+  free(rowLs);
+  free(colUs);
+	
+  // end timing
   clock_gettime(CLOCK_REALTIME, &end_time);
   double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
