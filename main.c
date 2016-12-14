@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
@@ -9,41 +10,49 @@
 
 int main(int argc, char** argv){
 
+	// Parse commandline arguments
+  size_t N, num_threads;
+  parse_args(argc, argv, &N, &num_threads);
+  size_t n_blocks=N/BLOCK_SIZE;
+
 	// Initialize MPI
 	int required = MPI_THREAD_FUNNELED;
 	int provided;
 	int myrank, size;
 	
-  MPI_Init_thread(&argc, &argv, required, &provided);
+	MPI_Init_thread(&argc, &argv, required, &provided);
   
-  if (provided != MPI_THREAD_FUNNELED) {
-    printf("Error: Requested thread support '%d', but only received '%d'\n", required, provided);
-    return 1;
-  }
+	if (provided != MPI_THREAD_FUNNELED) {
+		printf("Error: Requested thread support '%d', but only received '%d'\n", required, provided);
+		return 1;
+	}
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  
-  // Create Cartesian communicator (2 by size/2)
-  
-  // Parse commandline arguments
-  size_t n, num_threads;
-  parse_args(argc, argv, &n, &num_threads);
-  size_t n_blocks=n/BLOCK_SIZE;
-  size_t task[2] = {0,0};		// starting block
-  int req;
-  int *blocks = (int*)malloc(sizeof(int) * n_blocks * n_blocks);
-
-  // Set the number of threads (default: 32)
+	// Set and check thread number (default: 32)
   omp_set_num_threads(num_threads);
-
-  // Set up OpenMP
-	#pragma omp parallel
+  #pragma omp parallel
 	{
     if (omp_get_thread_num() == 0) {
       printf("Running with %lu OpenMP threads.\n", omp_get_num_threads());
     }
   }
+
+	// Get rank and size
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  
+  // Create row/column ring communicators on 2D torus
+  MPI_Comm TORUS_COMM, MPI_Comm ROW_COMM; MPI_Comm COL_COMM;
+  int mycoords[2];
+	int periods[2]={1,1};	// periodic
+	int reorder=1;				// allow reordering
+	int dims[2]={0,0};		// let MPI set dimensions
+	MPI_Dims_create(size,2,dims);
+	if (rank==0)
+		printf("Setting up a %dx%d torus communicator",dims[0],dims[1]);
+	MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &TORUS_COMM);
+	MPI_Cart_coords(TORUS_COMM, myrank, 2, mycoords);
+	MPI_Comm_split(TORUS_COMM, mycoords[0], mycoords[1], &ROW_COMM);
+  MPI_Comm_split(TORUS_COMM, mycoords[1], mycoords[0], &COL_COMM);
   
   // Clear the cache
   clear_cache();
@@ -52,15 +61,38 @@ int main(int argc, char** argv){
   struct timespec start_time, end_time;
   clock_gettime(CLOCK_REALTIME, &start_time);
   
-  for (layer=0; layer<n_blocks; layer++){
+  // Allocate memory
+  float* Inverses = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE);
+  if (myrank==0) {
+  	float* Ann = (float*)malloc(sizeof(float)*BLOCK_SIZE*BLOCK_SIZE);
+  }
+  else {
+  	float* compressed_Linv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE-1)/2);
+  	float* compressed_Uinv = (float*)malloc(sizeof(float)*BLOCK_SIZE*(BLOCK_SIZE+1)/2);
+  }
   
+  // Iterate over stages
+  int myLcount, myUcont, rowLcounts[dims[1]], colUcounts[dims[0]];
+  for (n=0; n<n_blocks; n++){
+  	myTaskCount=0;
+  	
 	  // ========= MASTER =========
-	  if (myrank==0) {
+		if (myrank==0) {
 
+			// LU decomposition of A[n][n]
+			generate_matrix(Ann, BLOCK_SIZE, BLOCK_SIZE);
+			inplace_LU(Ann, BLOCK_SIZE);
+			
+			// Invert L[n][n] and U[n][n]
+			invert_L(Ann, Inverses, BLOCK_SIZE);
+			invert_U(Ann, Inverses, BLOCK_SIZE);
+			
+			// Broadcast L^-1[n][n] and U^-1[n][n]
+			MPI_Bcast(Inverses, BLOCK_SIZE*BLOCK_SIZE, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+			// Allocate to slaves U[n][j]=L^-1[n][n]*A[n][j] and L[i][n]=A[i][n]*U^-1[n][n]
 			int num_slaves = size-1;
 			MPI_Status status;
-     
-	    // until all slaves have finished
 			while (num_slaves>0) {
 				// get work request
 				MPI_Recv(&req, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
@@ -79,49 +111,71 @@ int main(int argc, char** argv){
 						task[1]=task[0]; // fix to account for diagonal blocks...
 					}
 				}
+				// no more work to send
 				else {
 					numslaves--;
 					MPI_Send(task, 2, MPI_UINT64_T, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 				}
 			}
-	  }
+		} 
   
-  
-  
-  // ========= SLAVE 1: diagonal blocks =========
-  else if (rank==1) {
-  
-  }
-  
-  
-  
-  // ========= OTHER SLAVES: off diagonal blocks =========
-  else {
-  	// send work request
-		MPI_Send(&req, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-		// receive task
-		MPI_Recv(task, 2, MPI_UINT64_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		// ========= SLAVES =========
+		else {
 		
-		// until done
-		while (task[0] < n_blocks) {
-
-			// COMPUTE...
+			// Receive L^-1[n][n] and U^-1[n][n]
+			MPI_Bcast(Inverses, BLOCK_SIZE*BLOCK_SIZE, MPI_FLOAT, 0, MPI_COMM_WORLD);
+		
+			// request for work
+			MPI_Request req[2];
+			MPI_Isend(givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &req[0]);
+			MPI_Irecv(task, 2, MPI_UINT64_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE, &req[1]);
 			
-			// send work request
-			MPI_Send(&req, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-			// receive task
-			MPI_Recv(task, 2, MPI_UINT64_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			// Compress L^-1[n][n] and U^-1[n][n]
+			compress_L(Inverses, compressed_Linv, BLOCK_SIZE);
+			compress_U(Inverses, compressed_Uinv, BLOCK_SIZE);
+		
+			// until done
+			while (task[0] < n_blocks) {
+				// wait for task
+				MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
+
+				if (task[0] < n_blocks) {
+					// start new request for work
+					MPI_Isend(givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &req[0]);
+					MPI_Irecv(task, 2, MPI_UINT64_T, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE, &req[1]);
+				
+					// COMPUTE...
+					
+					if (task[]>task[]) myLcount+=1;
+					else	myUcount+=1;
+				}
+			}
 		}
-		MPI_Finilize();
-  }
+
+	  // ========= EVERYONE =========
+	  
+	  // Gather L counts from row and U counts from column
+	  MPI_Request gather[4];
+	  MPI_Iallgather(myLcounts, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
+	  MPI_Iallgather(myUcounts, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+	  
+		// Gather L[i][n] from row and U[n][j] from column
+		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
+		MPI_Iallgatherv();
+		MPI_Iallgatherv();
+		
+		// update A[i][j] using all of my L[i][n], U[n][j]
+
+		// COMPUTE...
+		
+		// update A[i][j] using all received L[i][n], U[n][j]
+		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
+	}
   
-  
-  
+	MPI_Finalize();
   // End timing
   clock_gettime(CLOCK_REALTIME, &end_time);
   double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
   printf("Total time: %f\n", run_time);
 }
-
-int get_task(size_t *task, process, task_matrix) 
