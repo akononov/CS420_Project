@@ -205,7 +205,7 @@ int main(int argc, char** argv){
 		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
 			size_t Lindex=0, Uindex=0;
-			for (int l=0; l<myLUcount; l++)
+			for (int l=0; l<myLUcount; l++) {
 				for (int u=0; u<myLUcount; u++) {
 					generate_matrix(A, block_size, block_size);
 					AmLU(A, &myLs[Lindex], &myUs[Uindex], block_size, block_size, block_size);
