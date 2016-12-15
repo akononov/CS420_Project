@@ -202,9 +202,9 @@ int main(int argc, char** argv){
 		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[2]);
 		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[3]);
 	
+		size_t Lindex=0, Uindex=0;
 		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
-			size_t Lindex=0, Uindex=0;
 			for (int l=0; l<myLUcount; l++) {
 				for (int u=0; u<myLUcount; u++) {
 					generate_matrix(A, block_size, block_size);
@@ -222,7 +222,7 @@ int main(int argc, char** argv){
 		// COMPUTE
 		for (int col=0; col<dims[1]; col++) {
 			Lindex=rowLdisps[col];
-			for (int row=0; row<dims[0]; i++) {
+			for (int row=0; row<dims[0]; row++) {
 				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs
 					Uindex=colUdisps[row];
 					for (int l=0; l<rowLcounts[col]; l++) {
