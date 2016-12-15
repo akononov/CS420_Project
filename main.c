@@ -187,8 +187,8 @@ int main(int argc, char** argv){
 	  
 	  // Gather L counts from row and U counts from column
 	  MPI_Request gather[4];
-	  MPI_Iallgather(myLUcount*block_area, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
-	  MPI_Iallgather(myLUcount*block_area, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+	  MPI_Iallgather(&myLUcount, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
+	  MPI_Iallgather(&myLUcount, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
 	  
 	  // Compute displacements of L and U blocks
 	  for (int i=1; i<dims[1]; i++)
