@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv){
 
-	// Parse commandline arguments
+	// Parse command line arguments
 	size_t N, num_threads, block_size;
 	parse_args(argc, argv, &N, &num_threads, &block_size);
 	size_t n_blocks=N/block_size;
@@ -199,8 +199,8 @@ int main(int argc, char** argv){
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 		MPI_Request gatherv[2];
-		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[2]);
-		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[3]);
+		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
+		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
 	
 		size_t Lindex=0, Uindex=0;
 		if (myrank != 0) {	
