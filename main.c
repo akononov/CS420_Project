@@ -75,7 +75,7 @@ int main(int argc, char** argv){
 	float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
 
 	// estimate number of L, U matrices per process
-	int estLUcount = n_blocks/(size-1)*1.1;
+	int estLUcount = n_blocks/size*1.1;
 	size_t estLUsize = estLUcount*block_area;
   
 	float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);

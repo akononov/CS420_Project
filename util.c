@@ -10,7 +10,7 @@ void parse_args(int argc, char** argv, size_t* n, size_t* t, size_t* b) {
   // Default number of threads
   *t = 12;
 
-  while ((option = getopt(argc, argv, "n:t:b")) != -1) {
+  while ((option = getopt(argc, argv, "n:t:b:")) != -1) {
     switch (option) {
       case 'n':
         sscanf(optarg, "%zu", n);
