@@ -28,7 +28,7 @@ int main(int argc, char** argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	if (myrank==0)
-		printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process",
+		printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process\n",
   												N, N, block_size, block_size, size, num_threads);
   
 /*	if (provided != MPI_THREAD_FUNNELED) {
@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 	int dims[2]={0,0};		// let MPI set dimensions
 	MPI_Dims_create(size,2,dims);
 	if (myrank==0)
-		printf("Setting up a %dx%d torus communicator",dims[0],dims[1]);
+		printf("Setting up a %dx%d torus communicator\n",dims[0],dims[1]);
 	MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &TORUS_COMM);	// make torus
 	MPI_Cart_coords(TORUS_COMM, myrank, 2, mycoords);				// get my coordinates
 	MPI_Comm_split(TORUS_COMM, mycoords[0], mycoords[1], &ROW_COMM);		// make row ring
@@ -84,8 +84,8 @@ int main(int argc, char** argv){
 	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
-	printf("Size of rowLs: %d",sizeof(float)*estLUsize*dims[1]);
-	printf("Size of rowUs: %d",sizeof(float)*estLUsize*dims[0]);
+	printf("Size of rowLs: %d\n",sizeof(float)*estLUsize*dims[1]);
+	printf("Size of rowUs: %d\n",sizeof(float)*estLUsize*dims[0]);
   
 	// initialize more variables/arrays
 	int givemework=1;
@@ -176,6 +176,7 @@ int main(int argc, char** argv){
 						estLUsize = estLUcount*block_area;
 						myLs = (float*)realloc(myLs, sizeof(float)*estLUsize);
 						myUs = (float*)realloc(myUs, sizeof(float)*estLUsize);
+						printf("Process %d reallocated myLs and myUs\n",myrank);
 					}
 					
 					// compute L[task][n]
@@ -186,7 +187,7 @@ int main(int argc, char** argv){
 					A_compressedU(A, compressed_Uinv, &myUs[myLUindex], block_size, block_size);
 					myLUindex += block_area;
 					
-					printf("process %d has completed %d tasks",myrank,myLUcount);
+					printf("process %d has completed %d tasks\n",myrank,myLUcount);
 				}
 			}
 		}
