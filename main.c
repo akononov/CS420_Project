@@ -84,6 +84,8 @@ int main(int argc, char** argv){
 	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
+	printf("Size of rowLs: %d",sizeof(float)*estLUsize*dims[1]);
+	printf("Size of rowUs: %d",sizeof(float)*estLUsize*dims[0]);
   
 	// initialize more variables/arrays
 	int givemework=1;
