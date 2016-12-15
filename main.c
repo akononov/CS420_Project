@@ -87,9 +87,9 @@ int main(int argc, char** argv){
   
 	// initialize more variables/arrays
 	int givemework=1;
-	size_t task=1;
-	size_t myLUcount, myLUindex;
-	size_t rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
+	int task=1;
+	int myLUcount, myLUindex;
+	int rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
 	rowLdisps[0]=0;
 	colUdisps[0]=0;
   
@@ -187,19 +187,19 @@ int main(int argc, char** argv){
 	  
 	  // Gather L counts from row and U counts from column
 	  MPI_Request gather[4];
-	  MPI_Iallgather(myLcount*block_area, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
-	  MPI_Iallgather(myUcount*block_area, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+	  MPI_Iallgather(myLUcount*block_area, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
+	  MPI_Iallgather(myLUcount*block_area, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
 	  
 	  // Compute displacements of L and U blocks
 	  for (int i=1; i<dims[1]; i++)
 	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
-	  for (i=1; i<dims[0]; i++)
+	  for (int i=1; i<dims[0]; i++)
 	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
 	  
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
-		MPI_Iallgatherv(myLs, myLcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gather[2]);
-		MPI_Iallgatherv(myUs, myIcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
+		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gather[2]);
+		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
 	
 		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
@@ -219,7 +219,7 @@ int main(int argc, char** argv){
 		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
 		
 		// COMPUTE
-		for (int col=0; col<dims[1]; i++) {
+		for (int col=0; col<dims[1]; col++) {
 			Lindex=rowLdisps[col];
 			for (int row=0; row<dims[0]; i++) {
 				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs
