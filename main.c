@@ -212,7 +212,7 @@ int main(int argc, char** argv){
 			rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
 		}
 		for (int i=1; i<dims[0]; i++) {
-			totUcount+=rowUcounts[i];
+			totUcount+=colUcounts[i];
 			colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
 		}
 			
