@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 		myLUindex=0;
   	
   	
-	  // ========= MASTER =========
+		// ========= MASTER =========
 		if (myrank==0) {
 
 			// LU decomposition of A[n][n]
@@ -183,23 +183,24 @@ int main(int argc, char** argv){
 			}
 		}
 
-	  // ========= EVERYONE ==========
+		// ========= EVERYONE ==========
 	  
-	  // Gather L counts from row and U counts from column
-	  MPI_Request gather[4];
-	  MPI_Iallgather(&myLUcount, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
-	  MPI_Iallgather(&myLUcount, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+		// Gather L counts from row and U counts from column
+		MPI_Request gather[2];
+		MPI_Iallgather(&myLUcount, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
+		MPI_Iallgather(&myLUcount, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
 	  
-	  // Compute displacements of L and U blocks
-	  for (int i=1; i<dims[1]; i++)
-	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
-	  for (int i=1; i<dims[0]; i++)
-	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
+		// Compute displacements of L and U blocks
+		for (int i=1; i<dims[1]; i++)
+			rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
+		for (int i=1; i<dims[0]; i++)
+			colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
 	  
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
-		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gather[2]);
-		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
+		MPI_Request gatherv[2]
+		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[2]);
+		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[3]);
 	
 		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
@@ -216,7 +217,7 @@ int main(int argc, char** argv){
 		}
 
 		// update A[i][j] using all received L[i][n], U[n][j]
-		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
+		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
 		
 		// COMPUTE
 		for (int col=0; col<dims[1]; col++) {
