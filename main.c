@@ -54,12 +54,12 @@ int main(int argc, char** argv){
 	int reorder=1;				// allow reordering
 	int dims[2]={0,0};		// let MPI set dimensions
 	MPI_Dims_create(size,2,dims);
-	if (rank==0)
+	if (myrank==0)
 		printf("Setting up a %dx%d torus communicator",dims[0],dims[1]);
 	MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &TORUS_COMM);	// make torus
-	MPI_Cart_coords(TORUS_COMM, myrank, 2, mycoords);													// get my coordinates
-	MPI_Comm_split(TORUS_COMM, mycoords[0], mycoords[1], &ROW_COMM);					// make row ring
-  MPI_Comm_split(TORUS_COMM, mycoords[1], mycoords[0], &COL_COMM);					// make column ring
+	MPI_Cart_coords(TORUS_COMM, myrank, 2, mycoords);				// get my coordinates
+	MPI_Comm_split(TORUS_COMM, mycoords[0], mycoords[1], &ROW_COMM);		// make row ring
+	MPI_Comm_split(TORUS_COMM, mycoords[1], mycoords[0], &COL_COMM);		// make column ring
   
   // Clear the cache
 //  clear_cache();
@@ -123,7 +123,7 @@ int main(int argc, char** argv){
 			// Allocate to slaves computation of U[n][task] and L[task][n]
 			int num_slaves = size-1;
 			MPI_Status status;
-			for (task=n+1, task<n_blocks, k++) {
+			for (task=n+1; task<n_blocks; task++) {
 				// get work request
 				MPI_Recv(&givemework, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 				// send task to process that requested work
@@ -137,7 +137,7 @@ int main(int argc, char** argv){
 				MPI_Recv(&givemework, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 				// send "done" message to process that requested work
 				MPI_Send(&task, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
-				numslaves--;
+				num_slaves--;
 			}
 		} 
   
