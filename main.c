@@ -6,6 +6,7 @@
 #include <omp.h>
 #include "util.c"
 #include "generate_matrix.c"
+#include "compress.c"
 #include "LU.c"
 #include "invert.c"
 #include "matrix_product.c"
@@ -13,10 +14,10 @@
 int main(int argc, char** argv){
 
 	// Parse commandline arguments
-  size_t N, num_threads, block_size;
-  parse_args(argc, argv, &N, &num_threads, &block_size);
-  size_t n_blocks=N/block_size;
-  size_t block_area=block_size*block_size;
+	size_t N, num_threads, block_size;
+	parse_args(argc, argv, &N, &num_threads, &block_size);
+	size_t n_blocks=N/block_size;
+	size_t block_area=block_size*block_size;
 
 	// Initialize MPI
 	int required = MPI_THREAD_FUNNELED, provided;
@@ -24,9 +25,10 @@ int main(int argc, char** argv){
 	MPI_Init_thread(&argc, &argv, required, &provided);	// not sure what happens with argc, argv
 	
 	// Get rank and size
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  if (myrank==0)	printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process",
+	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	if (myrank==0)
+		printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process",
   												N, N, block_size, block_size, size, num_threads);
   
 	if (provided != MPI_THREAD_FUNNELED) {
@@ -37,21 +39,20 @@ int main(int argc, char** argv){
 	}
 
 	// Set and check thread number (default: 32)
-  omp_set_num_threads(num_threads);
-  if (myrank==0) {
-	  #pragma omp parallel
+	omp_set_num_threads(num_threads);
+	if (myrank==0) {
+		#pragma omp parallel
 		{
-  	  if (omp_get_thread_num() == 0) {
-  	    printf("Running with %lu OpenMP threads.\n", omp_get_num_threads());
-  	  }
-  	}
-  }
+			if (omp_get_thread_num() == 0)
+				printf("Running with %lu OpenMP threads.\n", omp_get_num_threads());
+		}
+	}
   
-  // Create row/column ring communicators on 2D torus
-  MPI_Comm TORUS_COMM, ROW_COMM, COL_COMM;
-  int mycoords[2];
-	int periods[2]={1,1};	// periodic
-	int reorder=1;				// allow reordering
+	// Create row/column ring communicators on 2D torus
+	MPI_Comm TORUS_COMM, ROW_COMM, COL_COMM;
+	int mycoords[2];
+	int periods[2]={1,1};		// periodic
+	int reorder=1;			// allow reordering
 	int dims[2]={0,0};		// let MPI set dimensions
 	MPI_Dims_create(size,2,dims);
 	if (myrank==0)
@@ -61,23 +62,23 @@ int main(int argc, char** argv){
 	MPI_Comm_split(TORUS_COMM, mycoords[0], mycoords[1], &ROW_COMM);		// make row ring
 	MPI_Comm_split(TORUS_COMM, mycoords[1], mycoords[0], &COL_COMM);		// make column ring
   
-  // Clear the cache
-//  clear_cache();
+	// Clear the cache
+//	clear_cache();
   
-  // Begin timing
-//  struct timespec start_time, end_time;
-//  clock_gettime(CLOCK_REALTIME, &start_time);
+	// Begin timing
+//	struct timespec start_time, end_time;
+//	clock_gettime(CLOCK_REALTIME, &start_time);
   
   
-  // ===== Allocate memory =====
-  float* A = (float*)malloc(sizeof(float)*block_area);
-  float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
-  // estimate number of L, U matrices per process
-	int	estLUcount = n_blocks/(size-1)*1.1;
-	long estLUsize = estLUcount*block_area;
+	// ===== Allocate memory =====
+	float* A = (float*)malloc(sizeof(float)*block_area);
+	float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
+	// estimate number of L, U matrices per process
+	int estLUcount = n_blocks/(size-1)*1.1;
+	size_t estLUsize = estLUcount*block_area;
   
-  // master
-  if (myrank==0) {
+	// master
+	if (myrank==0) {
 		float* myLs, myUs;	// empty; needed for collective communication
 	}
 	
@@ -85,9 +86,9 @@ int main(int argc, char** argv){
 	else {
 		float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
 		float* compressed_Uinv = (float*)malloc(sizeof(float)*block_size*(block_size+1)/2);
-  	float* myLs = (float*)malloc(sizeof(float)*estLUsize);	// L blocks I compute
-  	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
-  }
+		float* myLs = (float*)malloc(sizeof(float)*estLUsize);	// L blocks I compute
+		float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
+	}
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
   
@@ -206,19 +207,21 @@ int main(int argc, char** argv){
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 		MPI_Iallgatherv(myLs, myLcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gather[2]);
 		MPI_Iallgatherv(myUs, myIcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
-		
-		// update A[i][j] using all of my L[i][n], U[n][j]
-		size_t Lindex=0, Uindex=0;
-		for (int l=0; l<myLUcount; l++)
-			for (int u=0; u<myLUcount; u++) {
-				generate_matrix(A, block_size, block_size);
-				AmLU(A, &myLs[Lindex], &myUs[Uindex], block_size, block_size, block_size);
-				Uindex+=block_area;
+	
+		if (myrank != 0) {	
+			// update A[i][j] using all of my L[i][n], U[n][j]
+			size_t Lindex=0, Uindex=0;
+			for (int l=0; l<myLUcount; l++)
+				for (int u=0; u<myLUcount; u++) {
+					generate_matrix(A, block_size, block_size);
+					AmLU(A, &myLs[Lindex], &myUs[Uindex], block_size, block_size, block_size);
+					Uindex+=block_area;
+				}
+				Uindex=0;
+				Lindex+=block_area;
 			}
-			Uindex=0;
-			Lindex+=block_area;
 		}
-		
+
 		// update A[i][j] using all received L[i][n], U[n][j]
 		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
 		
