@@ -75,7 +75,7 @@ int main(int argc, char** argv){
 	float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
 
 	// estimate number of L, U matrices per process
-	int estLUcount = n_blocks/(size)*1.1;
+	int estLUcount = n_blocks/size;
 	size_t estLUsize = estLUcount*block_area;
   
 	float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
@@ -84,7 +84,7 @@ int main(int argc, char** argv){
 	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
-	if (rank==0) {
+	if (myrank==0) {
 		printf("estLUsize: %d\n",estLUsize);
 		printf("Size of rowLs: %d\n",sizeof(float)*estLUsize*dims[1]);
 		printf("Size of rowUs: %d\n",sizeof(float)*estLUsize*dims[0]);
@@ -95,6 +95,7 @@ int main(int argc, char** argv){
 	int task;
 	int myLUcount, myLUindex;
 	int rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
+	int totLcount, totUcount;
 	rowLdisps[0]=0;
 	colUdisps[0]=0;
   
@@ -108,7 +109,7 @@ int main(int argc, char** argv){
   	
 		// ========= MASTER =========
 		if (myrank==0) {
-			printf("Starting stage %d",n);
+			printf("Starting stage %d\n",n);
 
 			// LU decomposition of A[n][n]
 			generate_matrix(A, block_size, block_size);
@@ -176,10 +177,8 @@ int main(int argc, char** argv){
 					myLUcount++;
 					if (myLUcount > estLUcount) {
 						// expand myLs and myUs
-						estLUcount = myLUcount*1.1;
-						estLUsize = estLUcount*block_area;
-						myLs = (float*)realloc(myLs, sizeof(float)*estLUsize);
-						myUs = (float*)realloc(myUs, sizeof(float)*estLUsize);
+						myLs = (float*)realloc(myLs, (myLUcount+2)*block_area);
+						myUs = (float*)realloc(myUs, (myLUcount+2)*block_area);
 						printf("Process %d reallocated myLs and myUs\n",myrank);
 						printf("New size: %d\n", sizeof(float)*estLUsize);
 					}
@@ -203,17 +202,33 @@ int main(int argc, char** argv){
 		MPI_Request gather[2];
 		MPI_Iallgather(&myLUcount, 1, MPI_INT, rowLcounts, 1, MPI_INT, ROW_COMM, &gather[0]);
 		MPI_Iallgather(&myLUcount, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
+		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 	  
-		// Compute displacements of L and U blocks
-		for (int i=1; i<dims[1]; i++)
+		// Compute total counts and displacements of L and U blocks
+		totLcount=rowLcounts[0];
+		totUcount=rowUcounts[0];
+		for (int i=1; i<dims[1]; i++) {
+			totLcount+=rowLcounts[i];
 			rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
-		for (int i=1; i<dims[0]; i++)
+		}
+		for (int i=1; i<dims[0]; i++) {
+			totUcount+=rowUcounts[i];
 			colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
+		}
+			
+		// Check for sufficient memory
+		if (totLcount > estLUcount*dims[1]) {
+			rowLs = (float*)realloc(rowLs, sizeof(float)*totLcount*block_area);
+			printf("Process %d reallocated rowLs\n",myrank);
+		}
+		if (totUcount > estLUcount*dims[0]) {
+			colUs = (float*)realloc(colUs, sizeof(float)*totUcount*block_area);
+			printf("Process %d reallocated colUs\n",myrank);
+		}
 	  
 		// Gather L[i][n] from row and U[n][j] from column
-		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 		MPI_Request gatherv[2];
-		printf("process %d is sending %d floats in allgatherv", myLUcount*block_area);
+		printf("process %d is sending %d floats in allgatherv\n", myrank, myLUcount*block_area);
 		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
 		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
 	
@@ -234,7 +249,6 @@ int main(int argc, char** argv){
 		// update A[i][j] using all received L[i][n], U[n][j]
 		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
 		
-		// COMPUTE
 		for (int col=0; col<dims[1]; col++) {
 			Lindex=rowLdisps[col];
 			for (int row=0; row<dims[0]; row++) {
