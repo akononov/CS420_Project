@@ -206,7 +206,7 @@ int main(int argc, char** argv){
 	  
 		// Compute total counts and displacements of L and U blocks
 		totLcount=rowLcounts[0];
-		totUcount=rowUcounts[0];
+		totUcount=colUcounts[0];
 		for (int i=1; i<dims[1]; i++) {
 			totLcount+=rowLcounts[i];
 			rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
