@@ -84,8 +84,11 @@ int main(int argc, char** argv){
 	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
-	printf("Size of rowLs: %d\n",sizeof(float)*estLUsize*dims[1]);
-	printf("Size of rowUs: %d\n",sizeof(float)*estLUsize*dims[0]);
+	if (rank==0) {
+		printf("estLUsize: %d\n",estLUsize);
+		printf("Size of rowLs: %d\n",sizeof(float)*estLUsize*dims[1]);
+		printf("Size of rowUs: %d\n",sizeof(float)*estLUsize*dims[0]);
+	}
   
 	// initialize more variables/arrays
 	int givemework=1;
@@ -126,7 +129,7 @@ int main(int argc, char** argv){
 				MPI_Recv(&givemework, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 				// send task to process that requested work
 				MPI_Send(&task, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
-				printf("Sent task %d to process %d",task,status.MPI_SOURCE);
+				printf("Sent task %d to process %d\n",task,status.MPI_SOURCE);
 			}
 			
 			// Tell slaves that we're done
@@ -136,6 +139,7 @@ int main(int argc, char** argv){
 				MPI_Recv(&givemework, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 				// send "done" message to process that requested work
 				MPI_Send(&task, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
+				printf("Sent task %d to process %d\n",task,status.MPI_SOURCE);
 				num_slaves--;
 			}
 		} 
@@ -161,7 +165,7 @@ int main(int argc, char** argv){
 			
 				// wait for task
 				MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
-				printf("process %d received task %d",myrank,task);
+				printf("process %d received task %d\n",myrank,task);
 
 				if (task != 0) {
 					// start new request for work
@@ -177,6 +181,7 @@ int main(int argc, char** argv){
 						myLs = (float*)realloc(myLs, sizeof(float)*estLUsize);
 						myUs = (float*)realloc(myUs, sizeof(float)*estLUsize);
 						printf("Process %d reallocated myLs and myUs\n",myrank);
+						printf("New size: %d\n", sizeof(float)*estLUsize);
 					}
 					
 					// compute L[task][n]
@@ -208,6 +213,7 @@ int main(int argc, char** argv){
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 		MPI_Request gatherv[2];
+		printf("process %d is sending %d floats in allgatherv", myLUcount*block_area);
 		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
 		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
 	
