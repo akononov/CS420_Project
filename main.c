@@ -4,7 +4,11 @@
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
-#include "util.h"
+#include "util.c"
+#include "generate_matrix.c"
+#include "LU.c"
+#include "invert.c"
+#include "matrix_product.c"
 
 int main(int argc, char** argv){
 
@@ -106,12 +110,12 @@ int main(int argc, char** argv){
 		if (myrank==0) {
 
 			// LU decomposition of A[n][n]
-			generate_matrix(Ann, block_size, block_size);
-			inplace_LU(Ann, block_size);
+			generate_matrix(A, block_size, block_size);
+			inplace_LU(A, block_size);
 			
 			// Invert L[n][n] and U[n][n]
-			invert_L(Ann, Inverses, block_size);
-			invert_U(Ann, Inverses, block_size);
+			invert_L(A, Inverses, block_size);
+			invert_U(A, Inverses, block_size);
 			
 			// Broadcast L^-1[n][n] and U^-1[n][n]
 			MPI_Bcast(Inverses, block_area, MPI_FLOAT, 0, MPI_COMM_WORLD);
@@ -194,9 +198,9 @@ int main(int argc, char** argv){
 	  
 	  // Compute displacements of L and U blocks
 	  for (int i=1, i<dims[1], i++)
-	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1];
+	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
 	  for (int i=1, i<dims[0], i++)
-	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1];
+	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
 	  
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
@@ -204,27 +208,45 @@ int main(int argc, char** argv){
 		MPI_Iallgatherv(myUs, myIcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gather[3]);
 		
 		// update A[i][j] using all of my L[i][n], U[n][j]
-		
-		// COMPUTE...
-		for (int l=0; l<myLcount; l++)
-			for (int u=0; u<myUcount; u++) {
-				
+		size_t Lindex=0, Uindex=0;
+		for (int l=0; l<myLUcount; l++)
+			for (int u=0; u<myLUcount; u++) {
+				generate_matrix(A, block_size, block_size);
+				AmLU(A, &myLs[Lindex], &myUs[Uindex], block_size, block_size, block_size);
+				Uindex+=block_area;
 			}
+			Uindex=0;
+			Lindex+=block_area;
 		}
 		
 		// update A[i][j] using all received L[i][n], U[n][j]
 		MPI_Waitall(2, &gather[2], MPI_STATUSES_IGNORE);
 		
 		// COMPUTE
-		
+		for (int col=0; col<dims[1]; i++) {
+			Lindex=rowLdisps[col];
+			for (int row=0; row<dims[0]; i++) {
+				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs
+					Uindex=colUdisps[row];
+					for (int l=0; l<rowLcounts[col]; l++) {
+						for (int u=0; u<colUcounts[row]; u++) {
+							generate_matrix(A, block_size, block_size);
+							AmLU(A, &rowLs[Lindex], &colUs[Uindex], block_size, block_size, block_size);
+							Uindex+=block_area;
+						}
+					Uindex=colUdisps[row];
+					Lindex+=block_area;
+					}
+				}
+			}
+		}
 	}
   
-  // finalize and free memory
+  // free memory and finalize
 	MPI_Finalize();
 	free(Inverses);
-  if (myrank==0)
-  	free(Ann);
-	else {
+	free(A);
+  if (myrank!=0) {
 		free(compressed_Linv);
 		free(compressed_Uinv);
 		free(myLs);
@@ -234,8 +256,9 @@ int main(int argc, char** argv){
   free(colUs);
 	
   // end timing
-//  clock_gettime(CLOCK_REALTIME, &end_time);
-//  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+/*  clock_gettime(CLOCK_REALTIME, &end_time);
+  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
   printf("Total time: %f\n", run_time);
+  */
 }
