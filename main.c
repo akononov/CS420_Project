@@ -73,38 +73,31 @@ int main(int argc, char** argv){
 	// ===== Allocate memory =====
 	float* A = (float*)malloc(sizeof(float)*block_area);
 	float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
+
 	// estimate number of L, U matrices per process
 	int estLUcount = n_blocks/(size-1)*1.1;
 	size_t estLUsize = estLUcount*block_area;
   
-	// master
-	if (myrank==0) {
-		float* myLs, myUs;	// empty; needed for collective communication
-	}
-	
-	// slaves
-	else {
-		float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
-		float* compressed_Uinv = (float*)malloc(sizeof(float)*block_size*(block_size+1)/2);
-		float* myLs = (float*)malloc(sizeof(float)*estLUsize);	// L blocks I compute
-		float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
-	}
+	float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
+	float* compressed_Uinv = (float*)malloc(sizeof(float)*block_size*(block_size+1)/2);
+	float* myLs = (float*)malloc(sizeof(float)*estLUsize);	// L blocks I compute
+	float* myUs = (float*)malloc(sizeof(float)*estLUsize);	// U blocks I compute
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
   
-  // initialize more variables/arrays
-  int givemework=1;
-  size_t task=1;
-  size_t myLUcount, myLUindex;
-  size_t rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
-  rowLdisps[0]=0;
-  colUdisps[0]=0;
+	// initialize more variables/arrays
+	int givemework=1;
+	size_t task=1;
+	size_t myLUcount, myLUindex;
+	size_t rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
+	rowLdisps[0]=0;
+	colUdisps[0]=0;
   
   
-  // ========= Iterate over stages ==============
-  for (size_t n=0; n<n_blocks; n++){		// will want a minimum block...
-  	myLUcount=0;
-  	myLUindex=0;
+	// ========= Iterate over stages ==============
+	for (size_t n=0; n<n_blocks; n++){		// will want a minimum block...
+		myLUcount=0;
+		myLUindex=0;
   	
   	
 	  // ========= MASTER =========
@@ -198,9 +191,9 @@ int main(int argc, char** argv){
 	  MPI_Iallgather(myUcount*block_area, 1, MPI_INT, colUcounts, 1, MPI_INT, COL_COMM, &gather[1]);
 	  
 	  // Compute displacements of L and U blocks
-	  for (int i=1, i<dims[1], i++)
+	  for (int i=1; i<dims[1]; i++)
 	  	rowLdisps[i] = rowLdisps[i-1] + rowLcounts[i-1]*block_area;
-	  for (int i=1, i<dims[0], i++)
+	  for (i=1; i<dims[0]; i++)
 	  	colUdisps[i] = colUdisps[i-1] + colUcounts[i-1]*block_area;
 	  
 		// Gather L[i][n] from row and U[n][j] from column
