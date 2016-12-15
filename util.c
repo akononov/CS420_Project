@@ -20,8 +20,9 @@ void parse_args(int argc, char** argv, size_t* n, size_t* t, size_t* b) {
         break;
       case 'b':
       	sscanf(optarg, "%zu", b);
+	break;
       default:
-        printf("Usage: %s -n NUM -t NUMTHREADS\n", argv[0]);
+        printf("Usage: %s -n NUM -t NUMTHREADS -b BLOCKSIZE\n", argv[0]);
         exit(EXIT_FAILURE);
     }
   }

@@ -31,13 +31,13 @@ int main(int argc, char** argv){
 		printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process",
   												N, N, block_size, block_size, size, num_threads);
   
-	if (provided != MPI_THREAD_FUNNELED) {
+/*	if (provided != MPI_THREAD_FUNNELED) {
 		if (myrank==0) {
 			printf("Error: Requested thread support '%d', but only received '%d'\n", required, provided);
 			return 1;
 		}
 	}
-
+*/
 	// Set and check thread number (default: 32)
 	omp_set_num_threads(num_threads);
 	if (myrank==0) {
@@ -75,7 +75,7 @@ int main(int argc, char** argv){
 	float* Inverses = (float*)malloc(sizeof(float)*block_area); // L[n][n]^(-1) and U[n][n]^(-1)
 
 	// estimate number of L, U matrices per process
-	int estLUcount = n_blocks/size*1.1;
+	int estLUcount = n_blocks/(size)*1.1;
 	size_t estLUsize = estLUcount*block_area;
   
 	float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
