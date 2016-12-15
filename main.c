@@ -87,7 +87,7 @@ int main(int argc, char** argv){
   
 	// initialize more variables/arrays
 	int givemework=1;
-	int task=1;
+	int task;
 	int myLUcount, myLUindex;
 	int rowLcounts[dims[1]], colUcounts[dims[0]], rowLdisps[dims[1]], colUdisps[dims[0]];
 	rowLdisps[0]=0;
@@ -98,10 +98,12 @@ int main(int argc, char** argv){
 	for (size_t n=0; n<n_blocks; n++){		// will want a minimum block...
 		myLUcount=0;
 		myLUindex=0;
+		task=1;
   	
   	
 		// ========= MASTER =========
 		if (myrank==0) {
+			printf("Starting stage %d",n);
 
 			// LU decomposition of A[n][n]
 			generate_matrix(A, block_size, block_size);
@@ -122,6 +124,7 @@ int main(int argc, char** argv){
 				MPI_Recv(&givemework, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 				// send task to process that requested work
 				MPI_Send(&task, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
+				printf("Sent task %d to process %d",task,status.MPI_SOURCE);
 			}
 			
 			// Tell slaves that we're done
@@ -156,6 +159,7 @@ int main(int argc, char** argv){
 			
 				// wait for task
 				MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
+				printf("process %d received task %d",myrank,task);
 
 				if (task != 0) {
 					// start new request for work
@@ -179,6 +183,8 @@ int main(int argc, char** argv){
 					generate_matrix(A, block_size, block_size);
 					A_compressedU(A, compressed_Uinv, &myUs[myLUindex], block_size, block_size);
 					myLUindex += block_area;
+					
+					printf("process %d has completed %d tasks",myrank,myLUcount);
 				}
 			}
 		}
