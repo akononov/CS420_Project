@@ -198,7 +198,7 @@ int main(int argc, char** argv){
 	  
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
-		MPI_Request gatherv[2]
+		MPI_Request gatherv[2];
 		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLcounts, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[2]);
 		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUcounts, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[3]);
 	
