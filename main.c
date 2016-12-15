@@ -27,7 +27,7 @@ int main(int argc, char** argv){
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   if (myrank==0)	printf("Tasked with decomposing a %d x %d matrix partitioned into %d x %d blocks using %d processes and %d threads per process",
-  												N, N, block_size, bloc_size, size, num_threads);
+  												N, N, block_size, block_size, size, num_threads);
   
 	if (provided != MPI_THREAD_FUNNELED) {
 		if (myrank==0) {
@@ -48,7 +48,7 @@ int main(int argc, char** argv){
   }
   
   // Create row/column ring communicators on 2D torus
-  MPI_Comm TORUS_COMM, MPI_Comm ROW_COMM, MPI_Comm COL_COMM;
+  MPI_Comm TORUS_COMM, ROW_COMM, COL_COMM;
   int mycoords[2];
 	int periods[2]={1,1};	// periodic
 	int reorder=1;				// allow reordering

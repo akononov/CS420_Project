@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <getopt.h>
 
-void parse_args(int argc, char** argv, size_t* n, size_t* t) {
+#define CACHE_SIZE 12582912
+
+void parse_args(int argc, char** argv, size_t* n, size_t* t, size_t* b) {
   int option = 0;
 
   // Default number of threads
@@ -17,7 +19,7 @@ void parse_args(int argc, char** argv, size_t* n, size_t* t) {
         sscanf(optarg, "%zu", t);
         break;
       case 'b':
-      	sscanf(optargm "%zu", b);
+      	sscanf(optarg, "%zu", b);
       default:
         printf("Usage: %s -n NUM -t NUMTHREADS\n", argv[0]);
         exit(EXIT_FAILURE);
