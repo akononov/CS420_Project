@@ -269,16 +269,15 @@ int main(int argc, char** argv){
   	if (myrank==0) {
 		generate_matrix(A, block_size, block_size);
 		inplace_LU(A, block_size);
+		printf("Reached end of computation!"\n)
 	}
   
 	// free memory and finalize
 	MPI_Finalize();
 	free(Inverses);
 	free(A);
-	if (myrank!=0) {
-		free(compressed_Linv);
-		free(compressed_Uinv);
-	}
+	free(compressed_Linv);
+	free(compressed_Uinv);
 	free(myLs);
 	free(myUs);
 	free(rowLs);
