@@ -103,7 +103,7 @@ int main(int argc, char** argv){
   
   
 	// ========= Iterate over stages ==============
-	for (size_t n=0; n<n_blocks; n++){		// will want a minimum block...
+	for (size_t n=0; n<n_blocks-1; n++){		// will want a minimum block...
 		myLUcount=0;
 		myLUsize=0;
 		task=1;
@@ -263,6 +263,12 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+	}
+  
+  	// LU decomposition of final block
+  	if (myrank==0) {
+		generate_matrix(A, block_size, block_size);
+		inplace_LU(A, block_size);
 	}
   
 	// free memory and finalize
