@@ -264,7 +264,7 @@ int main(int argc, char** argv){
 				}
 			}
 		}
-		printf("process %d: done computing all LU pairs\n");
+		printf("process %d: done computing all LU pairs\n",myrank);
 	}
   
   	// LU decomposition of final block
