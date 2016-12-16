@@ -219,8 +219,8 @@ int main(int argc, char** argv){
 		totUsize=allUdisps[dims[0]-1]+allUsizes[dims[0]-1];
 			
 		// Check for sufficient memory
-		printf("process %d has totLcount %d, totUcount %d\n",myrank, totLcount, totUcount);
-		printf("process %d has 
+		printf("process %d has myLsize %d, myUsize %d\n", myrank, myLUsize, myLUsize);
+		printf("process %d has totLsize %d, totUsize %d\n", myrank, totLsize, totUsize);
 		if (totLsize > rowLsize) {
 			rowLs = (float*)realloc(rowLs, sizeof(float)*totLsize);
 			rowLsize = totLsize;
@@ -235,20 +235,16 @@ int main(int argc, char** argv){
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Request gatherv[2];
 		printf("process %d is sending %d floats in allgatherv\n", myrank, myLUcount*block_area);
-		MPI_Iallgatherv(myLs, myLUcount*block_area, MPI_FLOAT, rowLs, rowLsize, rowLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
-		MPI_Iallgatherv(myUs, myLUcount*block_area, MPI_FLOAT, colUs, colUsize, colUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
+		MPI_Iallgatherv(myLs, myLUsize, MPI_FLOAT, rowLs, allLsizes, allLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
+		MPI_Iallgatherv(myUs, myLUsize, MPI_FLOAT, colUs, allUsizes, allUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
 	
-		size_t Lindex=0, Uindex=0;
 		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
-			for (int l=0; l<myLUcount; l++) {
-				for (int u=0; u<myLUcount; u++) {
+			for (int l=0; l<myLUsize; l+=block_area) {
+				for (int u=0; u<myLUsize; u+=block_area) {
 					generate_matrix(A, block_size, block_size);
-					AmLU(A, &myLs[Lindex], &myUs[Uindex], block_size, block_size, block_size);
-					Uindex+=block_area;
+					AmLU(A, &myLs[l], &myUs[u], block_size, block_size, block_size);
 				}
-				Uindex=0;
-				Lindex+=block_area;
 			}
 		}
 
@@ -256,36 +252,31 @@ int main(int argc, char** argv){
 		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
 		
 		for (int col=0; col<dims[1]; col++) {
-			Lindex=rowLdisps[col];
 			for (int row=0; row<dims[0]; row++) {
-				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs
-					Uindex=colUdisps[row];
-					for (int l=0; l<rowLsize[col]; l++) {
-						for (int u=0; u<colUsize[row]; u++) {
+				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs;
+					for (int l=allLdisps[col]; l<allLdisps[col]+allLsizes[col]; l+=block_area) {
+						for (int u=allUdisps[row]; u<allUdisps[row]+allUsizes[row]; u+=block_area) {
 							generate_matrix(A, block_size, block_size);
-							AmLU(A, &rowLs[Lindex], &colUs[Uindex], block_size, block_size, block_size);
-							Uindex+=block_area;
+							AmLU(A, &rowLs[l], &colUs[u], block_size, block_size, block_size);
 						}
-					Uindex=colUdisps[row];
-					Lindex+=block_area;
 					}
 				}
 			}
 		}
 	}
   
-  // free memory and finalize
+	// free memory and finalize
 	MPI_Finalize();
 	free(Inverses);
 	free(A);
-  if (myrank!=0) {
+	if (myrank!=0) {
 		free(compressed_Linv);
 		free(compressed_Uinv);
-		free(myLs);
-		free(myUs);
-  }
-  free(rowLs);
-  free(colUs);
+	}
+	free(myLs);
+	free(myUs);
+	free(rowLs);
+	free(colUs);
 	
   // end timing
 /*  clock_gettime(CLOCK_REALTIME, &end_time);
