@@ -85,9 +85,9 @@ int main(int argc, char** argv){
 	float* rowLs = (float*)malloc(sizeof(float)*estLUsize*dims[1]);	// buffers for gathering L, U
 	float* colUs = (float*)malloc(sizeof(float)*estLUsize*dims[0]);
 	if (myrank==0) {
-		printf("estLUsize: %d\n",estLUsize);
-		printf("Size of rowLs: %d\n",sizeof(float)*estLUsize*dims[1]);
-		printf("Size of rowUs: %d\n",sizeof(float)*estLUsize*dims[0]);
+		printf("estLUsize: %d floats\n",estLUsize);
+		printf("Size of rowLs: %d B\n",sizeof(float)*estLUsize*dims[1]);
+		printf("Size of rowUs: %d B\n",sizeof(float)*estLUsize*dims[0]);
 	}
   
 	// initialize more variables/arrays
@@ -177,10 +177,11 @@ int main(int argc, char** argv){
 					myLUcount++;
 					if (myLUcount > estLUcount) {
 						// expand myLs and myUs
-						myLs = (float*)realloc(myLs, (myLUcount+2)*block_area);
-						myUs = (float*)realloc(myUs, (myLUcount+2)*block_area);
+						size_t new_size=sizeof(float)*(myLUcount+2)*block_area;
+						myLs = (float*)realloc(myLs, new_size);
+						myUs = (float*)realloc(myUs, new_size);
 						printf("Process %d reallocated myLs and myUs\n",myrank);
-						printf("New size: %d\n", sizeof(float)*estLUsize);
+						printf("New size: %d\n", new_size);
 					}
 					
 					// compute L[task][n]
