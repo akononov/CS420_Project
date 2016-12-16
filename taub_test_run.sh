@@ -15,6 +15,6 @@ MATRIX_SIZE=100
 BLOCK_SIZE=25
 
 echo "Running small matrix"
-mpirun -np ${NUM_RANKS} -ppn 1 valgrind -v --leak-check=yes ./main -t 12 -n ${MATRIX_SIZE} -b ${BLOCK_SIZE}
-
+#mpirun -np ${NUM_RANKS} -ppn 1 valgrind -v --leak-check=yes ./main -t 12 -n ${MATRIX_SIZE} -b ${BLOCK_SIZE}
+mpirun -np ${NUM_RANKS} -ppn 1 ./main -t 12 -n ${MATRIX_SIZE} -b ${BLOCK_SIZE}
 
