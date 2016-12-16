@@ -285,10 +285,12 @@ int main(int argc, char** argv){
 	free(colUs);
 	MPI_Finalize();
 	
-  // end timing
-/*  clock_gettime(CLOCK_REALTIME, &end_time);
-  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+	// end timing
+/*	clock_gettime(CLOCK_REALTIME, &end_time);
+	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
-  printf("Total time: %f\n", run_time);
-  */
+	printf("Total time: %f\n", run_time);
+*/
+
+	return 0;
 }
