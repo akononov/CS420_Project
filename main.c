@@ -247,8 +247,8 @@ int main(int argc, char** argv){
 					AmLU(A, &myLs[l], &myUs[u], block_size, block_size, block_size);
 				}
 			}
+			printf("process %d: done computing my LU pairs\n",myrank);
 		}
-		printf("done computing my LU pairs\n");
 
 		// update A[i][j] using all received L[i][n], U[n][j]
 		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
@@ -264,7 +264,7 @@ int main(int argc, char** argv){
 				}
 			}
 		}
-		printf("done computing all LU pairs\n");
+		printf("process %d: done computing all LU pairs\n");
 	}
   
   	// LU decomposition of final block
@@ -275,7 +275,6 @@ int main(int argc, char** argv){
 	}
   
 	// free memory and finalize
-	MPI_Finalize();
 	free(Inverses);
 	free(A);
 	free(compressed_Linv);
@@ -284,6 +283,7 @@ int main(int argc, char** argv){
 	free(myUs);
 	free(rowLs);
 	free(colUs);
+	MPI_Finalize();
 	
   // end timing
 /*  clock_gettime(CLOCK_REALTIME, &end_time);
