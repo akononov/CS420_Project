@@ -241,7 +241,7 @@ int main(int argc, char** argv){
 		MPI_Iallgatherv(myUs, myLUsize, MPI_FLOAT, colUs, allUsizes, allUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
 		printf("started allgathers!\n");
 	
-		if (myrank != 0) {	
+/*		if (myrank != 0) {	
 			// update A[i][j] using all of my L[i][n], U[n][j]
 			for (int l=0; l<myLUsize; l+=block_area) {
 				for (int u=0; u<myLUsize; u+=block_area) {
@@ -251,10 +251,11 @@ int main(int argc, char** argv){
 			}
 			printf("process %d: done computing my LU pairs\n",myrank);
 		}
+*/
 
 		// update A[i][j] using all received L[i][n], U[n][j]
 		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
-		for (int col=0; col<dims[1]; col++) {
+/*		for (int col=0; col<dims[1]; col++) {
 			for (int row=0; row<dims[0]; row++) {
 				if (row != mycoords[0] || col != mycoords[1]) { // already computed with my pairs;
 					for (int l=allLdisps[col]; l<allLdisps[col]+allLsizes[col]; l+=block_area) {
@@ -267,6 +268,7 @@ int main(int argc, char** argv){
 			}
 		}
 		printf("process %d: done computing all LU pairs\n",myrank);
+*/
 	}
   
   	// LU decomposition of final block
