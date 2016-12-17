@@ -183,7 +183,7 @@ int main(int argc, char** argv){
 						myLs = (float*)realloc(myLs, new_size);
 						myUs = (float*)realloc(myUs, new_size);
 						printf("Process %d reallocated myLs and myUs\n",myrank);
-						printf("New size: %d B\n", new_size);
+						printf("New size: %d floats\n", new_size/sizeof(float));
 					}
 					
 					// compute L[task][n]
@@ -206,6 +206,9 @@ int main(int argc, char** argv){
 		MPI_Iallgather(&myLUsize, 1, MPI_INT, allLsizes, 1, MPI_INT, ROW_COMM, &gather[0]);
 		MPI_Iallgather(&myLUsize, 1, MPI_INT, allUsizes, 1, MPI_INT, COL_COMM, &gather[1]);
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
+		
+		printf("process %d has myLsize %d and received L sizes %d, %d\n",myrank,myLsize,allLsizes[0],allLsizes[1]);
+		printf("process %d has myUsize %d and received U sizes %d, %d\n",myrank,myUsize,allUsizes[0],allUsizes[1]);
 	  
 		// Compute total counts and displacements of L and U blocks
 		for (int i=1; i<dims[1]; i++) {
@@ -219,8 +222,7 @@ int main(int argc, char** argv){
 		totUsize=allUdisps[dims[0]-1]+allUsizes[dims[0]-1];
 			
 		// Check for sufficient memory
-		printf("process %d has myLsize %d, myUsize %d\n", myrank, myLUsize, myLUsize);
-		printf("process %d has totLsize %d, totUsize %d\n", myrank, totLsize, totUsize);
+		printf("process %d has totLsize %d, totUsize %d and computed L displacements %d, %d, and U displacements %d, %d\n", myrank, totLsize, totUsize,allLdisps[0],allLdisps[1],allUdisps[0],allUdisps[1]);
 		if (totLsize > rowLsize) {
 			rowLs = (float*)realloc(rowLs, sizeof(float)*totLsize);
 			rowLsize = totLsize;
@@ -275,10 +277,10 @@ int main(int argc, char** argv){
 	}
   
 	// free memory and finalize
-	printf("process %d freeing Inverses\n",myrank);
-	free(Inverses);
 	printf("process %d freeing A\n",myrank);
 	free(A);
+	printf("process %d freeing Inverses\n",myrank);
+	free(Inverses);
 	printf("process %d freeing Linv\n",myrank);
 	free(compressed_Linv);
 	printf("process %d freeing Uinv\n",myrank);
