@@ -115,7 +115,7 @@ int main(int argc, char** argv){
 
 			// LU decomposition of A[n][n]
 			generate_matrix(A, block_size, block_size);
-			inplace_LU(A, block_size);
+			inplace_LU(A, block_size);glibc detected
 			
 			// Invert L[n][n] and U[n][n]
 			invert_L(A, Inverses, block_size);
@@ -276,13 +276,21 @@ int main(int argc, char** argv){
   
 	// free memory and finalize
 	free(Inverses);
+	printf("process %d freed Inverses\n",myrank);
 	free(A);
+	printf("process %d freed A\n",myrank);
 	free(compressed_Linv);
+	printf("process %d freed Linv\n",myrank);
 	free(compressed_Uinv);
+	printf("process %d freed Uinv\n",myrank);
 	free(myLs);
+	printf("process %d freed myLs\n",myrank);
 	free(myUs);
+	printf("process %d freed myUs\n",myrank);
 	free(rowLs);
+	printf("process %d freed rowLs\n",myrank);
 	free(colUs);
+	printf("process %d freed colUs\n",myrank);
 	MPI_Finalize();
 	
 	// end timing
