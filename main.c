@@ -115,7 +115,7 @@ int main(int argc, char** argv){
 
 			// LU decomposition of A[n][n]
 			generate_matrix(A, block_size, block_size);
-			inplace_LU(A, block_size);glibc detected
+			inplace_LU(A, block_size);
 			
 			// Invert L[n][n] and U[n][n]
 			invert_L(A, Inverses, block_size);
