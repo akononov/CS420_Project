@@ -207,8 +207,8 @@ int main(int argc, char** argv){
 		MPI_Iallgather(&myLUsize, 1, MPI_INT, allUsizes, 1, MPI_INT, COL_COMM, &gather[1]);
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
 		
-		printf("process %d has myLsize %d and received L sizes %d, %d\n",myrank,myLsize,allLsizes[0],allLsizes[1]);
-		printf("process %d has myUsize %d and received U sizes %d, %d\n",myrank,myUsize,allUsizes[0],allUsizes[1]);
+		printf("process %d has myLsize %d and received L sizes %d, %d\n",myrank,myLUsize,allLsizes[0],allLsizes[1]);
+		printf("process %d has myUsize %d and received U sizes %d, %d\n",myrank,myLUsize,allUsizes[0],allUsizes[1]);
 	  
 		// Compute total counts and displacements of L and U blocks
 		for (int i=1; i<dims[1]; i++) {
