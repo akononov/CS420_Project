@@ -275,22 +275,23 @@ int main(int argc, char** argv){
 	}
   
 	// free memory and finalize
+	printf("process %d freeing Inverses\n",myrank);
 	free(Inverses);
-	printf("process %d freed Inverses\n",myrank);
+	printf("process %d freeing A\n",myrank);
 	free(A);
-	printf("process %d freed A\n",myrank);
+	printf("process %d freeing Linv\n",myrank);
 	free(compressed_Linv);
-	printf("process %d freed Linv\n",myrank);
+	printf("process %d freeing Uinv\n",myrank);
 	free(compressed_Uinv);
-	printf("process %d freed Uinv\n",myrank);
+	printf("process %d freeing myL\n",myrank);
 	free(myLs);
-	printf("process %d freed myLs\n",myrank);
+	printf("process %d freeing myUs\n",myrank);
 	free(myUs);
-	printf("process %d freed myUs\n",myrank);
+	printf("process %d freeing rowLs\n",myrank);
 	free(rowLs);
-	printf("process %d freed rowLs\n",myrank);
+	printf("process %d freeing colUs\n",myrank);
 	free(colUs);
-	printf("process %d freed colUs\n",myrank);
+
 	MPI_Finalize();
 	
 	// end timing
