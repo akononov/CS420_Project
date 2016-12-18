@@ -17,13 +17,13 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
 void AmLU(float* A, float* L, float* U, int M, int N, int K);
 void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T);
 
-//void main(int argc, char** argv) {
-void main() {
-	int N, num_threads, T;
-	N=4; num_threads=1; T=2;
-//	parse_args(argc, argv, &N, &num_threads, &T);
+void main(int argc, char** argv) {
+//void main() {
+	size_t N, num_threads, T;
+//	N=4; num_threads=1; T=2;
+	parse_args(argc, argv, &N, &num_threads, &T);
 	
-	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles",N,N,T,T);
+	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles\n",N,N,T,T);
 
 	float* A1 = (float*)malloc(sizeof(float)*N*N);
 	float* A2 = (float*)malloc(sizeof(float)*N*N);
@@ -54,9 +54,7 @@ void main() {
 */
   
   A_compressedU(A1,U,A2,N,N);
-  printf("Finished first product");
   A_compressedU_tiled(A1,U,L,N,N,T);
-  printf("Finished second product");
 	
 	for (int i=0; i<N; i++){
 		for (int j=0; j<N; j++){
@@ -157,7 +155,7 @@ void A_compressedU(float* A, float* U, float* product, int M, int N) {
   
   // iterate over entries of product
   int i, j, k, u;
-//  # pragma omp parallel for schedule(guided)
+  # pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
       product[i*N+j]=0;	// initialize
@@ -180,9 +178,9 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
   // iterate over entries of product
   int ii, jj, kk, i, j, k, u;
   float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
-//  # pragma omp parallel for schedule(guided) collapse(2)
+  # pragma omp parallel for schedule(guided) collapse(2)
   for (ii=0; ii<M/T; ii++) {
-  	for (jj=0; jj<N/T; ii++) {
+  	for (jj=0; jj<N/T; jj++) {
   		for (kk=0; kk<jj+1; kk++) {
 				for (i=ii*T; i<(ii+1)*T; i++) {
 					for (j=jj*T; j<(jj+1)*T; j++) {
