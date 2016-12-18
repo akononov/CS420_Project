@@ -76,9 +76,9 @@ int main(int argc, char** argv){
 
 	// estimate number of L, U matrices per process
 	int estLUcount = n_blocks/size;
-	size_t estLUsize = estLUcount*block_area;
-	size_t rowLsize = estLUsize*dims[1];
-	size_t colUsize = estLUsize*dims[0];
+	int estLUsize = estLUcount*block_area;
+	int rowLsize = estLUsize*dims[1];
+	int colUsize = estLUsize*dims[0];
   
 	float* compressed_Linv = (float*)malloc(sizeof(float)*block_size*(block_size-1)/2);
 	float* compressed_Uinv = (float*)malloc(sizeof(float)*block_size*(block_size+1)/2);
@@ -278,7 +278,7 @@ int main(int argc, char** argv){
 	}
   
 	// free memory and finalize
-/*
+
 	printf("process %d freeing A\n",myrank);
 	free(A);
 	printf("process %d freeing Inverses\n",myrank);
@@ -295,7 +295,7 @@ int main(int argc, char** argv){
 	free(rowLs);
 	printf("process %d freeing colUs\n",myrank);
 	free(colUs);
-*/
+
 
 	MPI_Finalize();
 	
