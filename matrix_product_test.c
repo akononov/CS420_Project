@@ -20,56 +20,97 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T);
 void main(int argc, char** argv) {
 //void main() {
 	size_t N, num_threads, T;
-//	N=4; num_threads=1; T=2;
 	parse_args(argc, argv, &N, &num_threads, &T);
 	
 	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles\n",N,N,T,T);
 
-	float* A1 = (float*)malloc(sizeof(float)*N*N);
-	float* A2 = (float*)malloc(sizeof(float)*N*N);
+	float* A = (float*)malloc(sizeof(float)*N*N);
+	float* product = (float*)malloc(sizeof(float)*N*N);
 	float* L = (float*)malloc(sizeof(float)*N*N);
 	float* U = (float*)malloc(sizeof(float)*N*N);
 
-	generate_matrix(A1,N,N);
-//	generate_matrix(L,N,N);
+	generate_matrix(A,N,N);
+	generate_matrix(L,N,N);
 	generate_matrix(U,N,N);
-/*	int i;
-	for (i=0; i<N*N; i++)
-		A2[i]=A1[i];
-	
+
+  // A-LU
 	struct timespec start_time, end_time;
 	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU(A1,L,U,N,N,N);
+	AmLU(A,L,U,N,N,N);
 	clock_gettime(CLOCK_REALTIME, &end_time);
 	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
   printf("AmLU regular time: %f\n", run_time);
+  
+  clear_cache();
 	
+	// A-LU, tiled
 	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU_tiled(A2,L,U,N,N,N,T);
+	AmLU_tiled(A,L,U,N,N,N,T);
 	clock_gettime(CLOCK_REALTIME, &end_time);
 	run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
   printf("AmLU tiled time: %f\n", run_time);
-*/
   
-  struct timespec start_time, end_time;
-  clock_gettime(CLOCK_REALTIME, &start_time);
-  A_compressedU(A1,U,A2,N,N);
-  clock_gettime(CLOCK_REALTIME, &end_time);
-  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
-                     (double)(end_time.tv_sec - start_time.tv_sec);
-  printf("A_coompressedU regular time: %f\n", run_time);
+  clear_cache();
   
-  clear_cache(); 
- 
+  // A*U
   clock_gettime(CLOCK_REALTIME, &start_time);
-  A_compressedU_tiled(A1,U,L,N,N,T);
+  A_U(A,U,product,N,N);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
-  printf("A_coompressedU tiled time: %f\n", run_time);
+  printf("A_U time: %f\n", run_time);
   
+  clear_cache();
+  
+  // A*compressedU
+  clock_gettime(CLOCK_REALTIME, &start_time);
+  A_compressedU(A,U,product,N,N);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("A_compressedU regular time: %f\n", run_time);
+  
+  clear_cache();
+  
+  // A*compressedU, tiled
+  clock_gettime(CLOCK_REALTIME, &start_time);
+  A_compressedU_tiled(A,U,product,N,N,T);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("A_compressedU tiled time: %f\n", run_time);
+  
+  clear_cache();
+  
+  // L*A
+  clock_gettime(CLOCK_REALTIME, &start_time);
+  L_A(L,A,product,N,N);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("L_A time: %f\n", run_time);
+  
+  clear_cache();
+  
+  // compressedL*A
+  clock_gettime(CLOCK_REALTIME, &start_time);
+  compressedL_A(L,A,product,N,N);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("compressedL_A regular time: %f\n", run_time);
+  
+  clear_cache();
+  
+  // compressedL*A, tiled
+  clock_gettime(CLOCK_REALTIME, &start_time);
+  compressedL_A_tiled(A,U,product,N,N,T);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("compressedL_A tiled time: %f\n", run_time);
 
 /*	
 	for (int i=0; i<N; i++){
@@ -86,11 +127,12 @@ void main(int argc, char** argv) {
 */
 
 	
-	free(A1);
-	free(A2);
+	free(A);
+	free(product);
 	free(L);
 	free(U);
 }
+
 
 
 /* These functions compute the product of a lower triangular matrix and a regular dense matrix. They will be used to multiply
