@@ -194,10 +194,13 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
   // iterate over entries of product
   int ii, jj, kk, i, j, k, u;
   float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
-  # pragma omp parallel for schedule(guided) collapse(2)
+  # pragma omp parallel for schedule(guided) collapse(3)
   for (ii=0; ii<M/T; ii++) {
   	for (jj=0; jj<N/T; jj++) {
-  		for (kk=0; kk<jj+1; kk++) {
+  		for (kk=0; kk<N/T; kk++) {
+  				if (kk>jj) {
+  					continue;
+  				}
 				for (i=ii*T; i<(ii+1)*T; i++) {
 					for (j=jj*T; j<(jj+1)*T; j++) {
 						u=j*(j+1)/2+kk*T; // kk*T entry in col j
