@@ -4,6 +4,7 @@
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
+#include <string.h>
 #include "util.c"
 #include "generate_matrix.c"
 #include "compress.c"
@@ -335,7 +336,7 @@ int main(int argc, char** argv){
 		clock_gettime(CLOCK_REALTIME, &end_time);
 		run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
-		printf("Update allA time: %f\n", myrank, run_time);
+		printf("Update all A time: %f\n", run_time);
 		printf("process %d: done computing all LU pairs\n",myrank);
 	}
   
