@@ -153,6 +153,7 @@ int main(int argc, char** argv){
 				MPI_Send(&task, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 				printf("Sent task %d to process %d\n",task,status.MPI_SOURCE);
 			}
+			clock_gettime(CLOCK_REALTIME, &end_time);
 			run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
     		printf("Dynamic allocation time: %f\n", run_time);
@@ -168,6 +169,7 @@ int main(int argc, char** argv){
 				printf("Sent task %d to process %d\n",task,status.MPI_SOURCE);
 				num_slaves--;
 			}
+			clock_gettime(CLOCK_REALTIME, &end_time);
 			run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
     		printf("Wind-down time: %f\n", run_time);
@@ -189,6 +191,7 @@ int main(int argc, char** argv){
 			clock_gettime(CLOCK_REALTIME, &start_time);
 			compress_L(Inverses, compressed_Linv, block_size);
 			compress_U(Inverses, compressed_Uinv, block_size);
+			clock_gettime(CLOCK_REALTIME, &end_time);
 			run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
     		printf("Compression time: %f\n", run_time);
@@ -216,6 +219,7 @@ int main(int argc, char** argv){
 						printf("Process %d reallocated myLs and myUs\n",myrank);
 						printf("New size: %d floats\n", new_size/sizeof(float));
 					}
+					clock_gettime(CLOCK_REALTIME, &end_time);
 					run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
     				printf("Realloc myLs, myUs time: %f\n", run_time);
@@ -224,6 +228,7 @@ int main(int argc, char** argv){
 					generate_matrix(A, block_size, block_size);
 					clock_gettime(CLOCK_REALTIME, &start_time);
 					compressedL_A(compressed_Linv, A, myLs+myLUsize, block_size, block_size);
+					clock_gettime(CLOCK_REALTIME, &end_time);
 					run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
     				printf("Compute L time: %f\n", run_time);
@@ -231,6 +236,7 @@ int main(int argc, char** argv){
 					generate_matrix(A, block_size, block_size);
 					clock_gettime(CLOCK_REALTIME, &start_time);
 					A_compressedU(A, compressed_Uinv, myUs+myLUsize, block_size, block_size);
+					clock_gettime(CLOCK_REALTIME, &end_time);
 					run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
     				printf("Compute U time: %f\n", run_time);
@@ -249,6 +255,7 @@ int main(int argc, char** argv){
 		MPI_Iallgather(&myLUsize, 1, MPI_INT, allLsizes, 1, MPI_INT, ROW_COMM, &gather[0]);
 		MPI_Iallgather(&myLUsize, 1, MPI_INT, allUsizes, 1, MPI_INT, COL_COMM, &gather[1]);
 		MPI_Waitall(2, gather, MPI_STATUSES_IGNORE);			// wait for counts
+		clock_gettime(CLOCK_REALTIME, &end_time);
 		run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
     	printf("Gather LU size time: %f\n", run_time);
@@ -296,6 +303,7 @@ int main(int argc, char** argv){
 					AmLU(A, myLs+l, myUs+u, block_size, block_size, block_size);
 				}
 			}
+			clock_gettime(CLOCK_REALTIME, &end_time);
 			run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
     		printf("Update myA time: %f\n", run_time);
@@ -306,6 +314,7 @@ int main(int argc, char** argv){
 		// update A[i][j] using all received L[i][n], U[n][j]
 		clock_gettime(CLOCK_REALTIME, &start_time);
 		MPI_Waitall(2, gatherv, MPI_STATUSES_IGNORE);
+		clock_gettime(CLOCK_REALTIME, &end_time);
 		run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
 		printf("Wait gatherv time for process %d: %f\n", myrank, run_time);
@@ -323,6 +332,7 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+		clock_gettime(CLOCK_REALTIME, &end_time);
 		run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      			(double)(end_time.tv_sec - start_time.tv_sec);
 		printf("Update allA time: %f\n", myrank, run_time);
