@@ -144,7 +144,7 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
 	    // iterate over entries of A within tile
         for (i=ii*T; i<(ii+1)*T; i++) {
           for (j=jj*T; j<(jj+1)*T; j++) {
-            temp_sum[(i*N+j)*K/T+kk]=0;
+//            temp_sum[(i*N+j)*K/T+kk]=0;
             // iterate along row of L/column of U
             for (k=kk*T; k<(kk+1)*T; k++) {
               A[i*N+j] -= L[i*K+k]*U[k*N+j];   // subtract L[i,k]*U[k,j]
