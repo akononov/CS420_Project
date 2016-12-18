@@ -192,29 +192,19 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
   // U is NxN
   
   // iterate over tiles in product
-  int ii, jj, kk, i, j, k, u;
-  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
+  int ii, jj, i, j, k, u;
+//  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
+  # pragma omp parallel for schedule(guided) collapse(2)
   for (ii=0; ii<M/T; ii++) {
   	for (jj=0; jj<N/T; jj++) {
-  		// intialize product to 0
-  		# pragma omp parallel for schedule(guided) collapse(2)
   		for (i=ii*T;i<(ii+1)*T; i++) {
   			for (j=jj*T;j<(jj+1)*T;j++) {
-  				product[i*N+j]=0;
-  			}
-  		}
-  		// iterate over tiles along row of A/col of U
-  		for (kk=0; kk<fmin(N/T,jj+1); kk++) {
-  				// iterate over elements within tile
-  				# pragma omp parallel for schedule(guided) collapse(2)
-				for (i=ii*T; i<(ii+1)*T; i++) {
-					for (j=jj*T; j<(jj+1)*T; j++) {
-						u=j*(j+1)/2+kk*T; // kk*T entry in col j
-						// iterate along row of A/column of U
-						for (k=kk*T; k<fmin((kk+1)*T,j+1); k++) {
-			        		product[i*N+j] += A[i*N+k]*U[u];
-			        	u++;
-			      }
+  				product[i*N+j]=0; // intialize product to 0
+					u=j*(j+1)/2; // first entry in col j
+					// iterate along row of A/column of U
+					for (k=0; k<j+1; k++) {
+			      product[i*N+j] += A[i*N+k]*U[u];
+			      u++;
 		      }
 		    }
       }
