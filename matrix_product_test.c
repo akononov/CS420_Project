@@ -140,10 +140,10 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
   #pragma omp parallel for schedule(guided)
   for (ii=0; ii<M/T; ii++) {
     for (jj=0; jj<N/T; jj++) {
-      for (kk=0; kk<K/T; kk++) {
-	// iterate over entries of A within tile
-        for (i=ii*T; i<(ii+1)*T; i++) {
-          for (j=jj*T; j<(jj+1)*T; j++) {
+	  // iterate over entries of A within tile
+      for (i=ii*T; i<(ii+1)*T; i++) {
+        for (j=jj*T; j<(jj+1)*T; j++) {
+          for (kk=0; kk<K/T; kk++) {
             temp_sum[(i*N+j)*K/T+kk]=0;
             // iterate along row of L/column of U
             for (k=kk*T; k<(kk+1)*T; k++) {
