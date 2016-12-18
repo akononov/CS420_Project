@@ -61,7 +61,8 @@ void main(int argc, char** argv) {
                      (double)(end_time.tv_sec - start_time.tv_sec);
   printf("A_coompressedU regular time: %f\n", run_time);
   
-  
+  clear_cache(); 
+ 
   clock_gettime(CLOCK_REALTIME, &start_time);
   A_compressedU_tiled(A1,U,L,N,N,T);
   clock_gettime(CLOCK_REALTIME, &end_time);
