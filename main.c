@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <sys/time.h>
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
+#include <string.h>
 #include "util.c"
 #include "generate_matrix.c"
 #include "compress.c"
@@ -66,8 +68,8 @@ int main(int argc, char** argv){
 //	clear_cache();
   
 	// Begin timing
-//	struct timespec start_time, end_time;
-//	clock_gettime(CLOCK_REALTIME, &start_time);
+	struct timespec start_time, end_time;
+	clock_gettime(CLOCK_REALTIME, &start_time);
   
   
 	// ===== Allocate memory =====
@@ -300,11 +302,10 @@ int main(int argc, char** argv){
 	MPI_Finalize();
 	
 	// end timing
-/*	clock_gettime(CLOCK_REALTIME, &end_time);
+	clock_gettime(CLOCK_REALTIME, &end_time);
 	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
 	printf("Total time: %f\n", run_time);
-*/
 
 	return 0;
 }
