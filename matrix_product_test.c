@@ -11,6 +11,7 @@
 
 void L_A(float* L, float* A, float* product, int M, int N);
 void compressedL_A(float* L, float* A, float* product, int M, int N);
+void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T);
 void A_U(float* A, float* U, float* product, int M, int N);
 void A_compressedU(float* A, float* U, float* product, int M, int N);
 void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T);
@@ -182,7 +183,32 @@ void compressedL_A(float* L, float* A, float* product, int M, int N) {
   }
 }
 
-
+void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T) {
+  // product is MxN
+  // L is MxM
+  // A is MxN
+  
+  // iterate over tiles in product
+  int ii, jj, i, j, k, l;
+//  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
+  # pragma omp parallel for schedule(guided) collapse(2)
+  for (ii=0; ii<M/T; ii++) {
+  	for (jj=0; jj<N/T; jj++) {
+  		for (i=ii*T;i<(ii+1)*T; i++) {
+  			for (j=jj*T;j<(jj+1)*T;j++) {
+  				product[i*N+j]=0; // intialize product to 0
+					l=i*(i-1)/2; // first entry in row i
+					// iterate along row of L/column of A
+					for (k=0; k<i; k++) {
+			      product[i*N+j] += L[l]*A[k*N+j]; // add L[i,k]*A[k,j]
+			      l++;
+		      }
+		      product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
+		    }
+      }
+    }
+  }
+}
 
 /* These functions compute the product of a dense matrix and an upper triangular matrix. They will be used to multiply
 the inverse of a diagonal block of U (produced by invert_U.c) by an off-diagonal block of A and thereby solve for an off-diagonal
