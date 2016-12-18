@@ -15,7 +15,8 @@ MATRIX_SIZE=100
 BLOCK_SIZE=25
 
 echo "Compiling main"
-mpiicc main.c -std=c99 -lrt -qopenmp -D_POSIX_C_SOURCE=199309L -o main #-g -O0
+#mpiicc main.c -std=c99 -lrt -qopenmp -o main -g -O0
+mpiicc main.c -std=c99 -lrt -qopenmp -D_POSIX_C_SOURCE=199309L -o main
 
 echo "Running main"
 #mpirun -np ${NUM_RANKS} -ppn 1 valgrind -v --leak-check=yes ./main -t 12 -n ${MATRIX_SIZE} -b ${BLOCK_SIZE}
