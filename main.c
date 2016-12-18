@@ -278,6 +278,7 @@ int main(int argc, char** argv){
 	}
   
 	// free memory and finalize
+/*
 	printf("process %d freeing A\n",myrank);
 	free(A);
 	printf("process %d freeing Inverses\n",myrank);
@@ -294,6 +295,7 @@ int main(int argc, char** argv){
 	free(rowLs);
 	printf("process %d freeing colUs\n",myrank);
 	free(colUs);
+*/
 
 	MPI_Finalize();
 	
