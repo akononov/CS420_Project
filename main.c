@@ -156,8 +156,8 @@ int main(int argc, char** argv){
 		
 			// fetch work
 			MPI_Request req[2];
-			MPI_Isend(&givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &req[0]);
-			MPI_Irecv(&task, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &req[1]);
+			MPI_Isend(&givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &(req[0]));
+			MPI_Irecv(&task, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &(req[1]));
 			
 			// compress L[n][n]^-1 and U[n][n]^-1
 			compress_L(Inverses, compressed_Linv, block_size);
@@ -172,8 +172,8 @@ int main(int argc, char** argv){
 
 				if (task != 0) {
 					// start new request for work
-					MPI_Isend(&givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &req[0]);
-					MPI_Irecv(&task, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &req[1]);
+					MPI_Isend(&givemework, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &(req[0]));
+					MPI_Irecv(&task, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &(req[1]));
 					
 					// increment my count and check for sufficient memory
 					myLUcount++;
@@ -188,10 +188,10 @@ int main(int argc, char** argv){
 					
 					// compute L[task][n]
 					generate_matrix(A, block_size, block_size);
-					compressedL_A(compressed_Linv, A, &myLs[myLUsize], block_size, block_size);
+					compressedL_A(compressed_Linv, A, &(myLs[myLUsize]), block_size, block_size);
 					// compute U[n][task]
 					generate_matrix(A, block_size, block_size);
-					A_compressedU(A, compressed_Uinv, &myUs[myLUsize], block_size, block_size);
+					A_compressedU(A, compressed_Uinv, &(myUs[myLUsize]), block_size, block_size);
 					myLUsize += block_area;
 					
 					printf("process %d has completed %d tasks\n",myrank,myLUcount);
@@ -237,8 +237,8 @@ int main(int argc, char** argv){
 		// Gather L[i][n] from row and U[n][j] from column
 		MPI_Request gatherv[2];
 		printf("process %d is sending %d floats in allgatherv\n", myrank, myLUcount*block_area);
-		MPI_Iallgatherv(myLs, myLUsize, MPI_FLOAT, rowLs, allLsizes, allLdisps, MPI_FLOAT, ROW_COMM, &gatherv[0]);
-		MPI_Iallgatherv(myUs, myLUsize, MPI_FLOAT, colUs, allUsizes, allUdisps, MPI_FLOAT, COL_COMM, &gatherv[1]);
+		MPI_Iallgatherv(myLs, myLUsize, MPI_FLOAT, rowLs, allLsizes, allLdisps, MPI_FLOAT, ROW_COMM, &(gatherv[0]));
+		MPI_Iallgatherv(myUs, myLUsize, MPI_FLOAT, colUs, allUsizes, allUdisps, MPI_FLOAT, COL_COMM, &(gatherv[1]));
 		printf("started allgathers!\n");
 	
 		if (myrank != 0) {	
@@ -246,7 +246,7 @@ int main(int argc, char** argv){
 			for (int l=0; l<myLUsize; l+=block_area) {
 				for (int u=0; u<myLUsize; u+=block_area) {
 					generate_matrix(A, block_size, block_size);
-					AmLU(A, &myLs[l], &myUs[u], block_size, block_size, block_size);
+					AmLU(A, &(myLs[l]), &(myUs[u]), block_size, block_size, block_size);
 				}
 			}
 			printf("process %d: done computing my LU pairs\n",myrank);
@@ -261,7 +261,7 @@ int main(int argc, char** argv){
 					for (int l=allLdisps[col]; l<allLdisps[col]+allLsizes[col]; l+=block_area) {
 						for (int u=allUdisps[row]; u<allUdisps[row]+allUsizes[row]; u+=block_area) {
 							generate_matrix(A, block_size, block_size);
-							AmLU(A, &rowLs[l], &colUs[u], block_size, block_size, block_size);
+							AmLU(A, &(rowLs[l]), &(colUs[u]), block_size, block_size, block_size);
 						}
 					}
 				}
