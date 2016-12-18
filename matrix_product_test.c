@@ -133,21 +133,21 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
   // T=tile size
 
   int i, j ,k, ii, jj, kk;
-  float* temp_sum = (float*)malloc(sizeof(float)*M*N*K/T);
+//  float* temp_sum = (float*)malloc(sizeof(float)*M*N*K/T);
 //  float temp_sum[M*N*K/T];
   
   // iterate over tiles
   #pragma omp parallel for schedule(guided)
   for (ii=0; ii<M/T; ii++) {
     for (jj=0; jj<N/T; jj++) {
-	  // iterate over entries of A within tile
-      for (i=ii*T; i<(ii+1)*T; i++) {
-        for (j=jj*T; j<(jj+1)*T; j++) {
-          for (kk=0; kk<K/T; kk++) {
+      for (kk=0; kk<K/T; kk++) {
+	    // iterate over entries of A within tile
+        for (i=ii*T; i<(ii+1)*T; i++) {
+          for (j=jj*T; j<(jj+1)*T; j++) {
             temp_sum[(i*N+j)*K/T+kk]=0;
             // iterate along row of L/column of U
             for (k=kk*T; k<(kk+1)*T; k++) {
-              temp_sum[(i*N+j)*K/T+kk] += L[i*K+k]*U[k*N+j];   // subtract L[i,k]*U[k,j]
+              A[i*N+j] -= L[i*K+k]*U[k*N+j];   // subtract L[i,k]*U[k,j]
             }
           }
       	} 
@@ -155,6 +155,7 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
     }
   }
 
+/*
   # pragma omp parallel for schedule(guided)  
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
@@ -165,6 +166,7 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
   }
 
   free(temp_sum);
+*/
 }
 
 
