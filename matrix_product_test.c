@@ -53,9 +53,24 @@ void main(int argc, char** argv) {
   printf("AmLU tiled time: %f\n", run_time);
 */
   
+  struct timespec start_time, end_time;
+  clock_gettime(CLOCK_REALTIME, &start_time);
   A_compressedU(A1,U,A2,N,N);
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("A_coompressedU regular time: %f\n", run_time);
+  
+  
+  clock_gettime(CLOCK_REALTIME, &start_time);
   A_compressedU_tiled(A1,U,L,N,N,T);
-	
+  clock_gettime(CLOCK_REALTIME, &end_time);
+  double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("A_coompressedU tiled time: %f\n", run_time);
+  
+
+/*	
 	for (int i=0; i<N; i++){
 		for (int j=0; j<N; j++){
 			printf("%f, ",A2[i*N+j]);
@@ -67,6 +82,7 @@ void main(int argc, char** argv) {
 		printf("\n");
 	}	
 	printf("\n");
+*/
 
 	
 	free(A1);
