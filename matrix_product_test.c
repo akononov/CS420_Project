@@ -3,9 +3,79 @@
 #include <math.h>
 #include <sys/time.h>
 #include <time.h>
+#include <omp.h>
 #include <math.h>
 #include <string.h>
+#include "util.c"
 #include "generate_matrix.c"
+
+void L_A(float* L, float* A, float* product, int M, int N);
+void compressedL_A(float* L, float* A, float* product, int M, int N);
+void A_U(float* A, float* U, float* product, int M, int N);
+void A_compressedU(float* A, float* U, float* product, int M, int N);
+void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T);
+void AmLU(float* A, float* L, float* U, int M, int N, int K);
+void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T);
+
+//void main(int argc, char** argv) {
+void main() {
+	int N, num_threads, T;
+	N=4; num_threads=1; T=2;
+//	parse_args(argc, argv, &N, &num_threads, &T);
+	
+	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles",N,N,T,T);
+
+	float* A1 = (float*)malloc(sizeof(float)*N*N);
+	float* A2 = (float*)malloc(sizeof(float)*N*N);
+	float* L = (float*)malloc(sizeof(float)*N*N);
+	float* U = (float*)malloc(sizeof(float)*N*N);
+
+	generate_matrix(A1,N,N);
+//	generate_matrix(L,N,N);
+	generate_matrix(U,N,N);
+/*	int i;
+	for (i=0; i<N*N; i++)
+		A2[i]=A1[i];
+	
+	struct timespec start_time, end_time;
+	clock_gettime(CLOCK_REALTIME, &start_time);
+	AmLU(A1,L,U,N,N,N);
+	clock_gettime(CLOCK_REALTIME, &end_time);
+	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("AmLU regular time: %f\n", run_time);
+	
+	clock_gettime(CLOCK_REALTIME, &start_time);
+	AmLU_tiled(A2,L,U,N,N,N,T);
+	clock_gettime(CLOCK_REALTIME, &end_time);
+	run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
+                     (double)(end_time.tv_sec - start_time.tv_sec);
+  printf("AmLU tiled time: %f\n", run_time);
+*/
+  
+  A_compressedU(A1,U,A2,N,N);
+  printf("Finished first product");
+  A_compressedU_tiled(A1,U,L,N,N,T);
+  printf("Finished second product");
+	
+	for (int i=0; i<N; i++){
+		for (int j=0; j<N; j++){
+			printf("%f, ",A2[i*N+j]);
+		}
+		printf("\t");
+		for (int j=0; j<N; j++){
+			printf("%f, ",L[i*N+j]);
+		}
+		printf("\n");
+	}	
+	printf("\n");
+
+	
+	free(A1);
+	free(A2);
+	free(L);
+	free(U);
+}
 
 
 /* These functions compute the product of a lower triangular matrix and a regular dense matrix. They will be used to multiply
@@ -87,7 +157,7 @@ void A_compressedU(float* A, float* U, float* product, int M, int N) {
   
   // iterate over entries of product
   int i, j, k, u;
-  # pragma omp parallel for schedule(guided)
+//  # pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
       product[i*N+j]=0;	// initialize
@@ -101,6 +171,42 @@ void A_compressedU(float* A, float* U, float* product, int M, int N) {
   }
 }
 
+
+void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T) {
+  // product is MxN
+  // A is MxN
+  // U is NxN
+  
+  // iterate over entries of product
+  int ii, jj, kk, i, j, k, u;
+  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
+//  # pragma omp parallel for schedule(guided) collapse(2)
+  for (ii=0; ii<M/T; ii++) {
+  	for (jj=0; jj<N/T; ii++) {
+  		for (kk=0; kk<jj+1; kk++) {
+				for (i=ii*T; i<(ii+1)*T; i++) {
+					for (j=jj*T; j<(jj+1)*T; j++) {
+						u=j*(j+1)/2+kk*T; // kk*T entry in col j
+						temp_sum[(i*N+j)*N/T+kk]=0;
+						// iterate along row of A/column of U
+						for (k=kk*T; k<fmin((kk+1)*T,j+1); k++) {
+			        temp_sum[(i*N+j)*N/T+kk] += A[i*N+k]*U[u];
+			        u++;
+			      }
+			    }
+			  }
+      }
+    }
+  }
+  # pragma omp parallel for schedule(guided)  
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      for (kk=0; kk<j/T+1; kk++) {
+        product[i*N+j]+=temp_sum[(i*N+j)*N/T+kk];
+      }
+    }	
+  }
+}
 
 
 /* This function computes the product of two dense matrices (L and U blocks) and then subtracts that product from
@@ -156,7 +262,7 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
   }
 
 
-  # pragma omp parallel for schedule(guided)  
+  # pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
       for (kk=0; kk<K/T; kk++) {
@@ -167,56 +273,5 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
 
   free(temp_sum);
 
-}
-
-
-void main(){
-	int N=1024, T=32;
-	float* A1 = (float*)malloc(sizeof(float)*N*N);
-	float* A2 = (float*)malloc(sizeof(float)*N*N);
-	float* L = (float*)malloc(sizeof(float)*N*N);
-	float* U = (float*)malloc(sizeof(float)*N*N);
-
-	generate_matrix(A1,N,N);
-	generate_matrix(L,N,N);
-	generate_matrix(U,N,N);
-	int i, j;
-	for (i=0; i<N*N; i++)
-		A2[i]=A1[i];
-	
-	struct timespec start_time, end_time;
-	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU(A1,L,U,N,N,N);
-	clock_gettime(CLOCK_REALTIME, &end_time);
-	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
-                     (double)(end_time.tv_sec - start_time.tv_sec);
-  printf("Regular time: %f\n", run_time);
-	
-	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU_tiled(A2,L,U,N,N,N,T);
-	clock_gettime(CLOCK_REALTIME, &end_time);
-	run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
-                     (double)(end_time.tv_sec - start_time.tv_sec);
-  printf("Tiled time: %f\n", run_time);
-	
-
-/*
-	for (i=0; i<N; i++){
-		for (j=0; j<N; j++){
-			printf("%f, ",A1[i*N+j]);
-		}
-		printf("\t");
-		for (j=0; j<N; j++){
-			printf("%f, ",A2[i*N+j]);
-		}
-		printf("\n");
-	}	
-	printf("\n");
-*/
-	
-	free(A1);
-	free(A2);
-	free(L);
-	free(U);
 }
 
