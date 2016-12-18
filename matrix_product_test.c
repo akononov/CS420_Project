@@ -18,7 +18,7 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
 void AmLU(float* A, float* L, float* U, int M, int N, int K);
 void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T);
 
-void main(int argc, char** argv) {
+int main(int argc, char** argv) {
 //void main() {
 	size_t N, num_threads, T;
 	parse_args(argc, argv, &N, &num_threads, &T);
@@ -132,6 +132,8 @@ void main(int argc, char** argv) {
 	free(product);
 	free(L);
 	free(U);
+
+	return 0;
 }
 
 
