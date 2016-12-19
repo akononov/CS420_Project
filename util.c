@@ -14,9 +14,11 @@ void parse_args(int argc, char** argv, int* n, int* d, int* b, int* t) {
     switch (option) {
       case 'n':
         sscanf(optarg, "%zu", n);
+        printf("Got parameter n...%d\n",*n);
         break;
       case 'd':
         sscanf(optarg, "%zu", d);
+        printf("Got parameter d...%d\n",*d);
         break;
       case 'b':
       	sscanf(optarg, "%zu", b);
@@ -24,6 +26,7 @@ void parse_args(int argc, char** argv, int* n, int* d, int* b, int* t) {
       	break;
       case 't':
       	sscanf(optarg, "%zu", t);
+      	printf("Got parameter t...%d\n",*t);
 		break;
       default:
         printf("Usage: %s -n NUM -d NUMTHREADS -b BLOCKSIZE -t TILESIZE\n", argv[0]);
