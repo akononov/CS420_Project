@@ -20,7 +20,7 @@ void parse_args(int argc, char** argv, int* n, int* t, int* b, int* T) {
         break;
       case 'b':
       	sscanf(optarg, "%zu", b);
-      	printf("Got parameter b...%d\n",b);
+      	printf("Got parameter b...%d\n",*b);
       	break;
       case 'T':
       	sscanf(optarg, "%zu", T);
