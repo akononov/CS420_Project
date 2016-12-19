@@ -20,24 +20,24 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T);
 
 int main(int argc, char** argv) {
 //void main() {
-	size_t N, num_threads, T;
-	parse_args(argc, argv, &N, &num_threads, &T);
+	int N, num_threads, T, B;
+	parse_args(argc, argv, &N, &num_threads, &B, &T);
 	
-	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles\n",N,N,T,T);
+	printf("Testing matrix multiplication on %d by %d blocks with %d by %d tiles\n",B,B,T,T);
 
-	float* A = (float*)malloc(sizeof(float)*N*N);
-	float* product = (float*)malloc(sizeof(float)*N*N);
-	float* L = (float*)malloc(sizeof(float)*N*N);
-	float* U = (float*)malloc(sizeof(float)*N*N);
+	float* A = (float*)malloc(sizeof(float)*B*B);
+	float* product = (float*)malloc(sizeof(float)*B*B);
+	float* L = (float*)malloc(sizeof(float)*B*B);
+	float* U = (float*)malloc(sizeof(float)*B*B);
 
-	generate_matrix(A,N,N);
-	generate_matrix(L,N,N);
-	generate_matrix(U,N,N);
+	generate_matrix(A,B,B);
+	generate_matrix(L,B,B);
+	generate_matrix(U,B,B);
 
   // A-LU
 	struct timespec start_time, end_time;
 	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU(A,L,U,N,N,N);
+	AmLU(A,L,U,B,B,B);
 	clock_gettime(CLOCK_REALTIME, &end_time);
 	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	
 	// A-LU, tiled
 	clock_gettime(CLOCK_REALTIME, &start_time);
-	AmLU_tiled(A,L,U,N,N,N,T);
+	AmLU_tiled(A,L,U,B,B,B,T);
 	clock_gettime(CLOCK_REALTIME, &end_time);
 	run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
   
   // A*U
   clock_gettime(CLOCK_REALTIME, &start_time);
-  A_U(A,U,product,N,N);
+  A_U(A,U,product,B,B);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
   
   // A*compressedU
   clock_gettime(CLOCK_REALTIME, &start_time);
-  A_compressedU(A,U,product,N,N);
+  A_compressedU(A,U,product,B,B);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   
   // A*compressedU, tiled
   clock_gettime(CLOCK_REALTIME, &start_time);
-  A_compressedU_tiled(A,U,product,N,N,T);
+  A_compressedU_tiled(A,U,product,B,B,T);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   
   // L*A
   clock_gettime(CLOCK_REALTIME, &start_time);
-  L_A(L,A,product,N,N);
+  L_A(L,A,product,B,B);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
   
   // compressedL*A
   clock_gettime(CLOCK_REALTIME, &start_time);
-  compressedL_A(L,A,product,N,N);
+  compressedL_A(L,A,product,B,B);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
   
   // compressedL*A, tiled
   clock_gettime(CLOCK_REALTIME, &start_time);
-  compressedL_A_tiled(A,U,product,N,N,T);
+  compressedL_A_tiled(A,U,product,B,B,T);
   clock_gettime(CLOCK_REALTIME, &end_time);
   run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
