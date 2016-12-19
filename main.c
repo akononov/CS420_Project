@@ -15,6 +15,8 @@
 
 int main(int argc, char** argv){
 
+	clear_cache();
+
 	// Begin timing
 	struct timespec start_time, end_time;
 	clock_gettime(CLOCK_REALTIME, &start_time);
@@ -193,7 +195,7 @@ int main(int argc, char** argv){
 					compressedL_A_tiled(compressed_Linv, A, myLs+myLUsize, block_size, block_size, tile_size);
 					// compute U[n][task]
 					generate_matrix(A, block_size, block_size);
-					A_compressedU_tiled(A, compressed_Uinv, myUs+myLUsize, block_size, block_size, tile_size);
+					A_compressedU(A, compressed_Uinv, myUs+myLUsize, block_size, block_size);
 					myLUsize += block_area;
 					
 					printf("process %d has completed %d tasks\n",myrank,myLUcount);
