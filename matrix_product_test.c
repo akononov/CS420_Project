@@ -194,8 +194,8 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
   int ii, jj, i, j, k, l;
 //  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
   # pragma omp parallel for schedule(guided) collapse(2)
-  for (ii=0; ii<M/T; ii++) {
-  	for (jj=0; jj<N/T; jj++) {
+  for (jj=0; jj<N/T; jj++) {
+  	for (ii=0; ii<M/T; ii++) {
   		for (i=ii*T;i<(ii+1)*T; i++) {
   			for (j=jj*T;j<(jj+1)*T;j++) {
   				product[i*N+j]=0; // intialize product to 0
