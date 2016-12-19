@@ -229,8 +229,9 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
   # pragma omp parallel for schedule(guided)
   for (i=0; i<M; i++) {
     for (j=0; j<N; j++) {
+      product[i*N+j]=0;
       for (kk=0; kk<ceil((i+1)/T); kk++) {
-        A[i*N+j]+=temp_sum[(i*N+j)*M/T+kk];
+        product[i*N+j]+=temp_sum[(i*N+j)*M/T+kk];
       }
     }	
   }
@@ -290,24 +291,50 @@ void A_compressedU_tiled(float* A, float* U, float* product, int M, int N, int T
   // U is NxN
   
   // iterate over tiles in product
-  int ii, jj, i, j, k, u;
-//  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
+  int ii, jj, kk, i, j, k, u;
+  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
   # pragma omp parallel for schedule(guided) collapse(2)
   for (ii=0; ii<M/T; ii++) {
   	for (jj=0; jj<N/T; jj++) {
-  		for (i=ii*T;i<(ii+1)*T; i++) {
-  			for (j=jj*T;j<(jj+1)*T;j++) {
-  				product[i*N+j]=0; // intialize product to 0
-					u=j*(j+1)/2; // first entry in col j
-					// iterate along row of A/column of U
-					for (k=0; k<j+1; k++) {
-			      product[i*N+j] += A[i*N+k]*U[u];
-			      u++;
+  	  for (kk=0; kk<jj; kk++) {
+    		for (i=ii*T;i<(ii+1)*T; i++) {
+    			for (j=jj*T;j<(jj+1)*T;j++) {
+    			  temp_sum[(i*N+j)*N/T+kk]=0;
+		  			u=j*(j+1)/2; // first entry in col j
+		  			// iterate along row of A/column of U
+		  			for (k=kk*T; k<(kk+1)*T; k++) {
+		  	      temp_sum[(i*N+j)*N/T+kk] += A[i*N+k]*U[u];
+		  	      u++;
+		  	    }
 		      }
 		    }
+		    // kk=jj block
+		    for (i=ii*T;i<(ii+1)*T; i++) {
+    			for (j=jj*T;j<(jj+1)*T;j++) {
+		  			u=j*(j+1)/2; // first entry in col j
+		  			// iterate along row of A/column of U
+		  			for (k=jj*T; k<j+1; k++) {
+		  	      temp_sum[(i*N+j)*N/T+kk] += A[i*N+k]*U[u];
+		  	      u++;
+		  	    }
+		  	  }
+		  	}
       }
     }
   }
+  
+  # pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      product[i*N+j]=0;
+      for (kk=0; kk<ceil((j+1)/T); kk++) {
+        product[i*N+j]+=temp_sum[(i*N+j)*N/T+kk];
+      }
+    }	
+  }
+
+  free(temp_sum);
+  
 }
 
 
