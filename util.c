@@ -22,11 +22,11 @@ void parse_args(int argc, char** argv, int* n, int* d, int* b, int* t) {
       	sscanf(optarg, "%zu", b);
       	printf("Got parameter b...%d\n",*b);
       	break;
-      case 'T':
+      case 't':
       	sscanf(optarg, "%zu", t);
 		break;
       default:
-        printf("Usage: %s -n NUM -t NUMTHREADS -b BLOCKSIZE -T TILESIZE\n", argv[0]);
+        printf("Usage: %s -n NUM -d NUMTHREADS -b BLOCKSIZE -t TILESIZE\n", argv[0]);
         exit(EXIT_FAILURE);
     }
   }
