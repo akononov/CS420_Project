@@ -4,7 +4,7 @@
 
 #define CACHE_SIZE 12582912
 
-void parse_args(int argc, char** argv, int* n, int* t, int* b, int* T) {
+void parse_args(int argc, char** argv, int* n, int* d, int* b, int* t) {
   int option = 0;
 
   // Default number of threads
@@ -15,7 +15,7 @@ void parse_args(int argc, char** argv, int* n, int* t, int* b, int* T) {
       case 'n':
         sscanf(optarg, "%zu", n);
         break;
-      case 't':
+      case 'd':
         sscanf(optarg, "%zu", d);
         break;
       case 'b':
