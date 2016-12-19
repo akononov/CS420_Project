@@ -22,7 +22,7 @@ int main(int argc, char** argv){
 	// Parse command line arguments
 	int N, num_threads, block_size, tile_size;
 	parse_args(argc, argv, &N, &num_threads, &block_size, &tile_size);
-	printf("Received arguments N=%d, t=%d, B=%d, T=%d",N,num_threads,block_size,tile_size);
+	printf("Received arguments N=%d, t=%d, B=%d, T=%d\n",N,num_threads,block_size,tile_size);
 	return 0;
 	int n_blocks=N/block_size;
 	int block_area=block_size*block_size;
