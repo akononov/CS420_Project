@@ -15,6 +15,10 @@
 
 int main(int argc, char** argv){
 
+	// Begin timing
+	struct timespec start_time, end_time;
+	clock_gettime(CLOCK_REALTIME, &start_time);
+
 	// Parse command line arguments
 	size_t N, num_threads, block_size;
 	parse_args(argc, argv, &N, &num_threads, &block_size);
@@ -66,11 +70,6 @@ int main(int argc, char** argv){
   
 	// Clear the cache
 //	clear_cache();
-  
-	// Begin timing
-	struct timespec start_time, end_time;
-	clock_gettime(CLOCK_REALTIME, &start_time);
-  
   
 	// ===== Allocate memory =====
 	float* A = (float*)malloc(sizeof(float)*block_area);
@@ -190,10 +189,10 @@ int main(int argc, char** argv){
 					
 					// compute L[task][n]
 					generate_matrix(A, block_size, block_size);
-					compressedL_A(compressed_Linv, A, myLs+myLUsize, block_size, block_size);
+					compressedL_A_tiled(compressed_Linv, A, myLs+myLUsize, block_size, block_size);
 					// compute U[n][task]
 					generate_matrix(A, block_size, block_size);
-					A_compressedU(A, compressed_Uinv, myUs+myLUsize, block_size, block_size);
+					A_compressedU_tiled(A, compressed_Uinv, myUs+myLUsize, block_size, block_size);
 					myLUsize += block_area;
 					
 					printf("process %d has completed %d tasks\n",myrank,myLUcount);
@@ -248,7 +247,7 @@ int main(int argc, char** argv){
 			for (int l=0; l<myLUsize; l+=block_area) {
 				for (int u=0; u<myLUsize; u+=block_area) {
 					generate_matrix(A, block_size, block_size);
-					AmLU(A, myLs+l, myUs+u, block_size, block_size, block_size);
+					AmLU_tiled(A, myLs+l, myUs+u, block_size, block_size, block_size);
 				}
 			}
 			printf("process %d: done computing my LU pairs\n",myrank);
@@ -263,7 +262,7 @@ int main(int argc, char** argv){
 					for (int l=allLdisps[col]; l<allLdisps[col]+allLsizes[col]; l+=block_area) {
 						for (int u=allUdisps[row]; u<allUdisps[row]+allUsizes[row]; u+=block_area) {
 							generate_matrix(A, block_size, block_size);
-							AmLU(A, rowLs+l, colUs+u, block_size, block_size, block_size);
+							AmLU_tiled(A, rowLs+l, colUs+u, block_size, block_size, block_size);
 						}
 					}
 				}
@@ -305,7 +304,7 @@ int main(int argc, char** argv){
 	clock_gettime(CLOCK_REALTIME, &end_time);
 	double run_time = (end_time.tv_nsec - start_time.tv_nsec) / 1.0e9 +
                      (double)(end_time.tv_sec - start_time.tv_sec);
-	printf("Total time: %f\n", run_time);
+	printf("Total execution time: %f\n", run_time);
 
 	return 0;
 }
