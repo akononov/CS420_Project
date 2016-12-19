@@ -6,8 +6,8 @@
 #include <omp.h>
 #include <math.h>
 #include <string.h>
-#include "util.c"
-#include "generate_matrix.c"
+//#include "util.c"
+//#include "generate_matrix.c"
 
 void L_A(float* L, float* A, float* product, int M, int N);
 void compressedL_A(float* L, float* A, float* product, int M, int N);
