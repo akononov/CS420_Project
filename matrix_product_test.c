@@ -190,7 +190,7 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
   // L is MxM
   // A is MxN
   
-    int i, j ,k, ii, jj, kk;
+    int i, j ,k, ii, jj, kk, l;
   float* temp_sum = (float*)malloc(sizeof(float)*M*N*M/T);
 //  float temp_sum[M*N*K/T];
   
@@ -206,7 +206,7 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
             l=i*(i-1)/2+kk*T; // first entry in kkth tile in row i
             // iterate along row of L/column of U
             for (k=kk*T; k<(kk+1)*T; k++) {
-              temp_sum[(i+N+j)*M/T+kk] += L[l]*A[k*N+j];   // add L[i,k]*U[k,j]
+              temp_sum[(i*N+j)*M/T+kk] += L[l]*A[k*N+j];   // add L[i,k]*U[k,j]
               l++;
             }
           }
@@ -220,7 +220,7 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
             temp_sum[(i+N+j)*M/T+ii] += L[l]*A[k*N+j];   // add L[i,k]*U[k,j]
             l++;
           }
-          temp_sum[i+N+j)*M/T+ii] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
+          temp_sum[(i*N+j)*M/T+ii] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
         }
       }
     }
@@ -355,7 +355,7 @@ void AmLU_tiled(float* A, float* L, float* U, int M, int N, int K, int T) {
             temp_sum[(i*N+j)*K/T+kk]=0;
             // iterate along row of L/column of U
             for (k=kk*T; k<(kk+1)*T; k++) {
-              temp_sum[(i+N+j)*K/T+kk] -= L[i*K+k]*U[k*N+j];   // subtract L[i,k]*U[k,j]
+              temp_sum[(i*N+j)*K/T+kk] -= L[i*K+k]*U[k*N+j];   // subtract L[i,k]*U[k,j]
             }
           }
       	} 
