@@ -1,0 +1,378 @@
+----------------------------------------
+Begin Torque Prologue on nid25328
+at Sun Dec 18 17:07:45 CST 2016
+Job Id:			5906255.bw
+Username:		tra430
+Group:			TRAIN_bahl
+Job name:		cs420_project
+Requested resources:	neednodes=1:ppn=32,nodes=1:ppn=32,walltime=01:00:00
+Queue:			normal
+Account:		bahl
+End Torque Prologue:  0.068 elapsed
+----------------------------------------
+
+
+
+
+Compiling matrix_product_test.c
+Running matrix_product_test
+Testing matrix multiplication on 256 by 256 blocks with 16 by 16 tiles
+AmLU regular time: 0.277496
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.550144
+Cleared cache (ignore this value: -nan)
+A_U time: 0.137896
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.092192
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.092866
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137827
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131933
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.132466
+Application 54246706 resources: utime ~23s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 256 by 256 blocks with 32 by 32 tiles
+AmLU regular time: 0.277430
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.542018
+Cleared cache (ignore this value: -nan)
+A_U time: 0.137910
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.092197
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.092430
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137827
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131967
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.132384
+Application 54246708 resources: utime ~23s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 256 by 256 blocks with 64 by 64 tiles
+AmLU regular time: 0.277443
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.520601
+Cleared cache (ignore this value: -nan)
+A_U time: 0.137880
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.093303
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.092431
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137894
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131932
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.132361
+Application 54246711 resources: utime ~23s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 256 by 256 blocks with 128 by 128 tiles
+AmLU regular time: 0.277534
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.537984
+Cleared cache (ignore this value: -nan)
+A_U time: 0.138043
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.092223
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.092415
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137899
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131934
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.132355
+Application 54246712 resources: utime ~23s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 256 by 256 blocks with 256 by 256 tiles
+AmLU regular time: 0.277541
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.532393
+Cleared cache (ignore this value: -nan)
+A_U time: 0.137994
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.092189
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.092470
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137918
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131903
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.132293
+Application 54246713 resources: utime ~23s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 256 by 256 blocks with 512 by 512 tiles
+AmLU regular time: 0.277547
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 0.001025
+Cleared cache (ignore this value: -nan)
+A_U time: 0.137949
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.092263
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.000001
+Cleared cache (ignore this value: -nan)
+L_A time: 0.137897
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 0.131932
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 0.000001
+Application 54246714 resources: utime ~22s, stime ~2s, Rss ~1721936, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 16 by 16 tiles
+AmLU regular time: 2.462065
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.757510
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256543
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.730821
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.731036
+Cleared cache (ignore this value: -nan)
+L_A time: 1.254618
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.214704
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.210237
+Application 54246715 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 32 by 32 tiles
+AmLU regular time: 2.462265
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.393728
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256296
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.730997
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.731103
+Cleared cache (ignore this value: -nan)
+L_A time: 1.253105
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.213380
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.210370
+Application 54246716 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 64 by 64 tiles
+AmLU regular time: 2.462165
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.654549
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256183
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.730868
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.731293
+Cleared cache (ignore this value: -nan)
+L_A time: 1.252771
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.213184
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.209894
+Application 54246719 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 128 by 128 tiles
+AmLU regular time: 2.462246
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.560752
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256139
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.731059
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.732261
+Cleared cache (ignore this value: -nan)
+L_A time: 1.253084
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.213191
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.209871
+Application 54246721 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 256 by 256 tiles
+AmLU regular time: 2.462415
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.514055
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256281
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.730780
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.731143
+Cleared cache (ignore this value: -nan)
+L_A time: 1.253434
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.213453
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.209940
+Application 54246722 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 512 by 512 blocks with 512 by 512 tiles
+AmLU regular time: 2.462300
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 4.489888
+Cleared cache (ignore this value: -nan)
+A_U time: 1.256168
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 0.730933
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 0.731912
+Cleared cache (ignore this value: -nan)
+L_A time: 1.254329
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 1.213109
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 1.209670
+Application 54246723 resources: utime ~35s, stime ~2s, Rss ~1725028, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 16 by 16 tiles
+AmLU regular time: 29.702036
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 38.857700
+Cleared cache (ignore this value: -nan)
+A_U time: 13.465706
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.822567
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.807078
+Cleared cache (ignore this value: -nan)
+L_A time: 13.947750
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.512899
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.148077
+Application 54246736 resources: utime ~156s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 32 by 32 tiles
+AmLU regular time: 29.706137
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 42.717572
+Cleared cache (ignore this value: -nan)
+A_U time: 13.781477
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.825152
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.805268
+Cleared cache (ignore this value: -nan)
+L_A time: 13.897927
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.461230
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.462406
+Application 54246748 resources: utime ~160s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 64 by 64 tiles
+AmLU regular time: 29.711164
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 41.205998
+Cleared cache (ignore this value: -nan)
+A_U time: 13.470881
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.819062
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.807382
+Cleared cache (ignore this value: -nan)
+L_A time: 13.912675
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.486430
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.150649
+Application 54246753 resources: utime ~158s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 128 by 128 tiles
+AmLU regular time: 29.702606
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 40.441636
+Cleared cache (ignore this value: -nan)
+A_U time: 13.758646
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.826295
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.806415
+Cleared cache (ignore this value: -nan)
+L_A time: 13.978159
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.553532
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.439768
+Application 54246757 resources: utime ~158s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 256 by 256 tiles
+AmLU regular time: 29.720556
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 40.070654
+Cleared cache (ignore this value: -nan)
+A_U time: 13.458818
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.822834
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.806149
+Cleared cache (ignore this value: -nan)
+L_A time: 14.028626
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.600652
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.139700
+Application 54246762 resources: utime ~157s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 1024 by 1024 blocks with 512 by 512 tiles
+AmLU regular time: 29.708359
+Cleared cache (ignore this value: -nan)
+AmLU tiled time: 52.738112
+Cleared cache (ignore this value: -nan)
+A_U time: 13.777786
+Cleared cache (ignore this value: -nan)
+A_compressedU regular time: 5.827063
+Cleared cache (ignore this value: -nan)
+A_compressedU tiled time: 5.811949
+Cleared cache (ignore this value: -nan)
+L_A time: 14.001593
+Cleared cache (ignore this value: -nan)
+compressedL_A regular time: 13.575364
+Cleared cache (ignore this value: -nan)
+compressedL_A tiled time: 13.469841
+Application 54246769 resources: utime ~171s, stime ~2s, Rss ~1737424, inblocks ~26, outblocks ~42
+Testing matrix multiplication on 2048 by 2048 blocks with 16 by 16 tiles
+AmLU regular time: 461.360477
+Cleared cache (ignore this value: -nan)
+Application 54246786 exit signals: Segmentation fault
+Application 54246786 resources: utime ~538s, stime ~15s, Rss ~819916, inblocks ~26, outblocks ~41
+Testing matrix multiplication on 2048 by 2048 blocks with 32 by 32 tiles
+AmLU regular time: 462.834607
+Cleared cache (ignore this value: -nan)
+*** glibc detected *** ./matrix_product_test: free(): invalid pointer: 0x00002aaabe477010 ***
+======= Backtrace: =========
+/lib64/libc.so.6(+0x790c8)[0x2aaaaaf500c8]
+/lib64/libc.so.6(cfree+0x6c)[0x2aaaaaf5510c]
+./matrix_product_test[0x401d8e]
+./matrix_product_test[0x400d65]
+/lib64/libc.so.6(__libc_start_main+0xe6)[0x2aaaaaef5c36]
+./matrix_product_test[0x4007d9]
+======= Memory map: ========
+00400000-00403000 r-xp 00000000 00:0e 303038                             /var/opt/cray/alps/spool/54246804/matrix_product_test
+00602000-00603000 r--p 00002000 00:0e 303038                             /var/opt/cray/alps/spool/54246804/matrix_product_test
+00603000-00604000 rw-p 00003000 00:0e 303038                             /var/opt/cray/alps/spool/54246804/matrix_product_test
+2aaaaaaab000-2aaaaaaca000 r-xp 00000000 00:1d 16985085                   /lib64/ld-2.11.3.so
+2aaaaaaca000-2aaaaaacb000 r-xp 00000000 00:00 0                          [vdso]
+2aaaaaacb000-2aaaaaacd000 rw-p 00000000 00:00 0 
+2aaaaacca000-2aaaaaccb000 r--p 0001f000 00:1d 16985085                   /lib64/ld-2.11.3.so
+2aaaaaccb000-2aaaaaccd000 rw-p 00020000 00:1d 16985085                   /lib64/ld-2.11.3.so
+2aaaaaccd000-2aaaaacd5000 r-xp 00000000 00:1d 16984745                   /lib64/librt-2.11.3.so
+2aaaaacd5000-2aaaaaed4000 ---p 00008000 00:1d 16984745                   /lib64/librt-2.11.3.so
+2aaaaaed4000-2aaaaaed5000 r--p 00007000 00:1d 16984745                   /lib64/librt-2.11.3.so
+2aaaaaed5000-2aaaaaed6000 rw-p 00008000 00:1d 16984745                   /lib64/librt-2.11.3.so
+2aaaaaed6000-2aaaaaed7000 rw-p 00000000 00:00 0 
+2aaaaaed7000-2aaaab049000 r-xp 00000000 00:1d 16984715                   /lib64/libc-2.11.3.so
+2aaaab049000-2aaaab249000 ---p 00172000 00:1d 16984715                   /lib64/libc-2.11.3.so
+2aaaab249000-2aaaab24d000 r--p 00172000 00:1d 16984715                   /lib64/libc-2.11.3.so
+2aaaab24d000-2aaaab24e000 rw-p 00176000 00:1d 16984715                   /lib64/libc-2.11.3.so
+2aaaab24e000-2aaaab253000 rw-p 00000000 00:00 0 
+2aaaab253000-2aaaab26a000 r-xp 00000000 00:1d 16984741                   /lib64/libpthread-2.11.3.so
+2aaaab26a000-2aaaab46a000 ---p 00017000 00:1d 16984741                   /lib64/libpthread-2.11.3.so
+2aaaab46a000-2aaaab46b000 r--p 00017000 00:1d 16984741                   /lib64/libpthread-2.11.3.so
+2aaaab46b000-2aaaab46c000 rw-p 00018000 00:1d 16984741                   /lib64/libpthread-2.11.3.so
+2aaaab46c000-2aaafe478000 rw-p 00000000 00:00 0 
+2aaafe504000-2aaafe519000 r-xp 00000000 00:1d 16982828                   /lib64/libgcc_s.so.1
+2aaafe519000-2aaafe718000 ---p 00015000 00:1d 16982828                   /lib64/libgcc_s.so.1
+2aaafe718000-2aaafe719000 r--p 00014000 00:1d 16982828                   /lib64/libgcc_s.so.1
+2aaafe719000-2aaafe71a000 rw-p 00015000 00:1d 16982828                   /lib64/libgcc_s.so.1
+2aab00000000-2aab00021000 rw-p 00000000 00:00 0 
+2aab00021000-2aab04000000 ---p 00000000 00:00 0 
+7ffffffd7000-7ffffffff000 rw-p 00000000 00:00 0                          [stack]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+Application 54246804 exit signals: Aborted
+Application 54246804 resources: utime ~809s, stime ~1s, Rss ~557932, inblocks ~33, outblocks ~47
+Testing matrix multiplication on 2048 by 2048 blocks with 64 by 64 tiles
+AmLU regular time: 465.260603
+Cleared cache (ignore this value: -nan)
+aprun: Apid 54246818: Caught signal Terminated, sending to application
