@@ -190,26 +190,53 @@ void compressedL_A_tiled(float* L, float* A, float* product, int M, int N, int T
   // L is MxM
   // A is MxN
   
-  // iterate over tiles in product
-  int ii, jj, i, j, k, l;
-//  float* temp_sum = (float*)malloc(sizeof(float)*M*N*N/T);
-  # pragma omp parallel for schedule(guided) collapse(2)
-  for (jj=0; jj<N/T; jj++) {
-  	for (ii=0; ii<M/T; ii++) {
-  		for (i=ii*T;i<(ii+1)*T; i++) {
-  			for (j=jj*T;j<(jj+1)*T;j++) {
-  				product[i*N+j]=0; // intialize product to 0
-					l=i*(i-1)/2; // first entry in row i
-					// iterate along row of L/column of A
-					for (k=0; k<i; k++) {
-			      product[i*N+j] += L[l]*A[k*N+j]; // add L[i,k]*A[k,j]
-			      l++;
-		      }
-		      product[i*N+j] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
-		    }
+    int i, j ,k, ii, jj, kk;
+  float* temp_sum = (float*)malloc(sizeof(float)*M*N*M/T);
+//  float temp_sum[M*N*K/T];
+  
+  // iterate over tiles
+  #pragma omp parallel for schedule(guided) collapse(2)
+  for (ii=0; ii<M/T; ii++) {
+    for (jj=0; jj<N/T; jj++) {
+      for (kk=0; kk<ii; kk++) {
+	    // iterate over entries of A within tile
+        for (i=ii*T; i<(ii+1)*T; i++) {
+          for (j=jj*T; j<(jj+1)*T; j++) {
+            temp_sum[(i*N+j)*M/T+kk]=0;
+            l=i*(i-1)/2+kk*T; // first entry in kkth tile in row i
+            // iterate along row of L/column of U
+            for (k=kk*T; k<(kk+1)*T; k++) {
+              temp_sum[(i+N+j)*M/T+kk] += L[l]*A[k*N+j];   // add L[i,k]*U[k,j]
+              l++;
+            }
+          }
+      	} 
+      }
+      // kk=ii block
+      for (i=ii*T; i<(ii+1)*T; i++) {
+        for (j=jj*T; j<(jj+1)*T; j++) {
+          l=i*(i-1)/2+ii*T;
+          for (k=ii*T; k<i; k++) {
+            temp_sum[(i+N+j)*M/T+ii] += L[l]*A[k*N+j];   // add L[i,k]*U[k,j]
+            l++;
+          }
+          temp_sum[i+N+j)*M/T+ii] += A[i*N+j]; // add L[i,i]*A[i,j]=A[i,j]
+        }
       }
     }
   }
+
+  # pragma omp parallel for schedule(guided)
+  for (i=0; i<M; i++) {
+    for (j=0; j<N; j++) {
+      for (kk=0; kk<ceil((i+1)/T); kk++) {
+        A[i*N+j]+=temp_sum[(i*N+j)*M/T+kk];
+      }
+    }	
+  }
+
+  free(temp_sum);
+
 }
 
 /* These functions compute the product of a dense matrix and an upper triangular matrix. They will be used to multiply
