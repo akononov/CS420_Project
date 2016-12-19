@@ -20,8 +20,8 @@ int main(int argc, char** argv){
 	clock_gettime(CLOCK_REALTIME, &start_time);
 
 	// Parse command line arguments
-	size_t N, num_threads, block_size;
-	parse_args(argc, argv, &N, &num_threads, &block_size);
+	int N, num_threads, block_size, tile_size;
+	parse_args(argc, argv, &N, &num_threads, &block_size, &tile_size);
 	size_t n_blocks=N/block_size;
 	size_t block_area=block_size*block_size;
 
@@ -189,10 +189,10 @@ int main(int argc, char** argv){
 					
 					// compute L[task][n]
 					generate_matrix(A, block_size, block_size);
-					compressedL_A_tiled(compressed_Linv, A, myLs+myLUsize, block_size, block_size);
+					compressedL_A_tiled(compressed_Linv, A, myLs+myLUsize, block_size, block_size, tile_size);
 					// compute U[n][task]
 					generate_matrix(A, block_size, block_size);
-					A_compressedU_tiled(A, compressed_Uinv, myUs+myLUsize, block_size, block_size);
+					A_compressedU_tiled(A, compressed_Uinv, myUs+myLUsize, block_size, block_size, tile_size);
 					myLUsize += block_area;
 					
 					printf("process %d has completed %d tasks\n",myrank,myLUcount);
@@ -247,7 +247,7 @@ int main(int argc, char** argv){
 			for (int l=0; l<myLUsize; l+=block_area) {
 				for (int u=0; u<myLUsize; u+=block_area) {
 					generate_matrix(A, block_size, block_size);
-					AmLU_tiled(A, myLs+l, myUs+u, block_size, block_size, block_size);
+					AmLU_tiled(A, myLs+l, myUs+u, block_size, block_size, block_size, tile_size);
 				}
 			}
 			printf("process %d: done computing my LU pairs\n",myrank);
@@ -262,7 +262,7 @@ int main(int argc, char** argv){
 					for (int l=allLdisps[col]; l<allLdisps[col]+allLsizes[col]; l+=block_area) {
 						for (int u=allUdisps[row]; u<allUdisps[row]+allUsizes[row]; u+=block_area) {
 							generate_matrix(A, block_size, block_size);
-							AmLU_tiled(A, rowLs+l, colUs+u, block_size, block_size, block_size);
+							AmLU_tiled(A, rowLs+l, colUs+u, block_size, block_size, block_size, tile_size);
 						}
 					}
 				}
