@@ -8,26 +8,22 @@ void parse_args(int argc, char** argv, int* n, int* d, int* b, int* t) {
   int option = 0;
 
   // Default number of threads
-  *t = 32;
+  *d = 32;
 
   while ((option = getopt(argc, argv, "n:d:b:t:")) != -1) {
     switch (option) {
       case 'n':
-        sscanf(optarg, "%zu", n);
-        printf("Got parameter n...%d\n",*n);
+        sscanf(optarg, "%d", n);
         break;
       case 'd':
-        sscanf(optarg, "%zu", d);
-        printf("Got parameter d...%d\n",*d);
+        sscanf(optarg, "%d", d);
         break;
       case 'b':
-      	sscanf(optarg, "%zu", b);
-      	printf("Got parameter b...%d\n",*b);
+      	sscanf(optarg, "%d", b);
       	break;
       case 't':
-      	sscanf(optarg, "%zu", t);
-      	printf("Got parameter t...%d\n",*t);
-		break;
+      	sscanf(optarg, "%d", t);
+	break;
       default:
         printf("Usage: %s -n NUM -d NUMTHREADS -b BLOCKSIZE -t TILESIZE\n", argv[0]);
         exit(EXIT_FAILURE);
