@@ -1,0 +1,136 @@
+BASH: Running test 0 with 4 ranks,  threads, 4096 matrix, and 256 block
+Total execution time: 31.343007
+Total execution time: 31.344222
+Total execution time: 31.345707
+Total execution time: 31.344745
+BASH: Running test 1 with 4 ranks,  threads, 4096 matrix, and 256 block
+Total execution time: 36.886792
+Total execution time: 36.885587
+Total execution time: 36.890824
+Total execution time: 36.893946
+BASH: Running test 2 with 4 ranks,  threads, 4096 matrix, and 256 block
+Total execution time: 31.264081
+Total execution time: 31.264695
+Total execution time: 31.266114
+Total execution time: 31.265572
+BASH: Running test 3 with 4 ranks,  threads, 4096 matrix, and 256 block
+Total execution time: 48.786307
+Total execution time: 48.791612
+Total execution time: 48.793291
+Total execution time: 48.792970
+BASH: Running test 0 with 4 ranks,  threads, 4096 matrix, and 512 block
+Total execution time: 14.593438
+Total execution time: 14.598451
+Total execution time: 14.594038
+Total execution time: 14.602419
+BASH: Running test 1 with 4 ranks,  threads, 4096 matrix, and 512 block
+Total execution time: 14.485342
+Total execution time: 14.487242
+Total execution time: 14.489401
+Total execution time: 14.492356
+BASH: Running test 2 with 4 ranks,  threads, 4096 matrix, and 512 block
+Total execution time: 14.408624
+Total execution time: 14.412634
+Total execution time: 14.409161
+Total execution time: 14.410150
+BASH: Running test 3 with 4 ranks,  threads, 4096 matrix, and 512 block
+Total execution time: 15.033344
+Total execution time: 15.035667
+Total execution time: 15.037524
+Total execution time: 15.037726
+BASH: Running test 0 with 4 ranks,  threads, 4096 matrix, and 1024 block
+Total execution time: 18.156692
+Total execution time: 18.158789
+Total execution time: 18.159538
+Total execution time: 18.163098
+BASH: Running test 1 with 4 ranks,  threads, 4096 matrix, and 1024 block
+Total execution time: 18.085212
+Total execution time: 18.082250
+Total execution time: 18.086119
+Total execution time: 18.089231
+BASH: Running test 2 with 4 ranks,  threads, 4096 matrix, and 1024 block
+Total execution time: 18.747033
+Total execution time: 18.745856
+Total execution time: 18.748573
+Total execution time: 18.747334
+BASH: Running test 3 with 4 ranks,  threads, 4096 matrix, and 1024 block
+Total execution time: 18.074568
+Total execution time: 18.075893
+Total execution time: 18.078645
+Total execution time: 18.078078
+BASH: Running test 0 with 4 ranks,  threads, 8192 matrix, and 256 block
+Total execution time: 255.994217
+Total execution time: 255.997027
+Total execution time: 255.997786
+Total execution time: 255.999926
+BASH: Running test 1 with 4 ranks,  threads, 8192 matrix, and 256 block
+Total execution time: 255.097103
+Total execution time: 255.100059
+Total execution time: 255.100232
+Total execution time: 255.104438
+BASH: Running test 2 with 4 ranks,  threads, 8192 matrix, and 256 block
+Total execution time: 256.186101
+Total execution time: 256.186417
+Total execution time: 256.187497
+Total execution time: 256.187818
+BASH: Running test 3 with 4 ranks,  threads, 8192 matrix, and 256 block
+Total execution time: 297.352482
+Total execution time: 297.353528
+Total execution time: 297.351800
+Total execution time: 297.353842
+BASH: Running test 0 with 4 ranks,  threads, 8192 matrix, and 512 block
+Total execution time: 106.472066
+Total execution time: 106.470631
+Total execution time: 106.473966
+Total execution time: 106.474400
+BASH: Running test 1 with 4 ranks,  threads, 8192 matrix, and 512 block
+Total execution time: 106.423683
+Total execution time: 106.425625
+Total execution time: 106.426485
+Total execution time: 106.428071
+BASH: Running test 2 with 4 ranks,  threads, 8192 matrix, and 512 block
+Total execution time: 105.761247
+Total execution time: 105.762383
+Total execution time: 105.763033
+Total execution time: 105.766737
+BASH: Running test 3 with 4 ranks,  threads, 8192 matrix, and 512 block
+Total execution time: 133.907657
+Total execution time: 133.912215
+Total execution time: 133.912115
+Total execution time: 133.914561
+BASH: Running test 0 with 4 ranks,  threads, 8192 matrix, and 1024 block
+Total execution time: 101.825449
+Total execution time: 101.829195
+Total execution time: 101.830945
+Total execution time: 101.835034
+BASH: Running test 1 with 4 ranks,  threads, 8192 matrix, and 1024 block
+Total execution time: 78.016239
+Total execution time: 78.021699
+Total execution time: 78.022729
+Total execution time: 78.024884
+BASH: Running test 2 with 4 ranks,  threads, 8192 matrix, and 1024 block
+Total execution time: 84.448959
+Total execution time: 84.453908
+Total execution time: 84.460755
+Total execution time: 84.464056
+BASH: Running test 3 with 4 ranks,  threads, 8192 matrix, and 1024 block
+Total execution time: 84.421757
+Total execution time: 84.422549
+Total execution time: 84.426138
+Total execution time: 84.424104
+BASH: Running test 0 with 4 ranks,  threads, 16392 matrix, and 256 block
+Total execution time: 2076.411689
+Total execution time: 2076.417168
+Total execution time: 2076.419119
+Total execution time: 2076.418613
+BASH: Running test 1 with 4 ranks,  threads, 16392 matrix, and 256 block
+Total execution time: 3246.009847
+Total execution time: 3245.979007
+Total execution time: 3245.984516
+Total execution time: 3245.986882
+BASH: Running test 2 with 4 ranks,  threads, 16392 matrix, and 256 block
+Total execution time: 2053.731691
+Total execution time: 2053.758411
+Total execution time: 2053.757929
+Total execution time: 2053.759523
+BASH: Running test 3 with 4 ranks,  threads, 16392 matrix, and 256 block
